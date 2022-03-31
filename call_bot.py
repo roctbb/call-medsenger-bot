@@ -88,7 +88,9 @@ def create_call():
 
     number, password = createMeeting(key, sec)
     call_url = "https://call.medsenger.ru/{}/{}".format(number, password)
-    medsenger_api.send_message(contract_id, "Видеозвонок от врача.", action_link=call_url, action_type="zoom", action_name="Подключиться к конференции", send_from="doctor",
+    medsenger_api.send_message(contract_id, "Видеозвонок от врача.", action_link=call_url, action_type="zoom", action_name="Подключиться к конференции", only_patient=True,
+                               action_deadline=int(time.time() + 60 * 60), action_big=True)
+    medsenger_api.send_message(contract_id, "Видеозвонок от врача.", action_link=call_url, action_type="zoom", action_name="Подключиться к конференции", only_doctor=True,
                                action_deadline=int(time.time() + 60 * 60), action_big=True)
 
     return render_template('close.html')
