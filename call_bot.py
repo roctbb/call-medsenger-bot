@@ -91,8 +91,11 @@ def create_call():
     medsenger_api.send_message(contract_id, "Видеозвонок от врача.", action_link=call_url, action_type="zoom", action_name="Подключиться к конференции", send_from="doctor",
                                action_deadline=int(time.time() + 60 * 60), action_big=True)
 
-    return render_template('create_call.html', call_url=call_url)
+    return render_template('close.html')
 
+@app.route('/close', methods=['GET'])
+def close():
+    return render_template('close.html')
 
 @app.route('/', methods=['GET'])
 def index():
