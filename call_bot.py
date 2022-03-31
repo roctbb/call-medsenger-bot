@@ -68,7 +68,7 @@ def call(call_id, call_pass):
     return render_template('call.html', call_id=call_id, call_pass=call_pass, signature=sign, api_key=ZOOM_KEY)
 
 @app.route('/call', methods=['GET'])
-def settings():
+def create_call():
     key = request.args.get('api_key', '')
     contract_id = request.args.get('contract_id', '')
 
