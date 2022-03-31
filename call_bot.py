@@ -83,8 +83,10 @@ def create_call():
         return "Видеозвонки не настроены."
 
     number, password = createMeeting(key, sec)
+    call_url = "https://call.medsenger.ru/{}/{}".format(number, password)
+    medsenger_api.send_message(contract_id, "Видеозвонок от врача.", action_link=call_url, action_type="zoom", send_from="doctor", action_deadline=int(time.time() + 60 * 60))
 
-    return render_template('create_call.html', url="https://call.medsenger.ru/{}/{}".format(number, password))
+    return render_template('create_call.html', call_url=call_url)
 
 @app.route('/', methods=['GET'])
 def index():
