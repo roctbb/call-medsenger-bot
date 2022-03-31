@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <script>
+        window.open("{{ call_url }} ", '_blank');
+        window.parent.postMessage('close-modal', '*');
+    </script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+Flask
+requests
+medsenger-api
+python-jose
