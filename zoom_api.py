@@ -20,17 +20,20 @@ def generateToken(key, sec):
 
 
 def createMeeting(key, sec):
-    meetingdetails = {"topic": "Видеозвонок medsenger",
-                      "type": 2,
-                      "password": random.randint(100000, 999999),
-                      "start_time": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
-                      "duration": "60",
-                      "timezone": "Europe/Moscow",
-                      "settings": {"host_video": "true",
-                                   "participant_video": "true",
-                                   "join_before_host": "true",
-                                   }
-                      }
+    meetingdetails = {
+        "topic": "Видеозвонок medsenger",
+        "type": 2,
+        "password": random.randint(100000, 999999),
+        "start_time": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+        "duration": "60",
+        "timezone": "Europe/Moscow",
+        "settings": {
+            "host_video": "true",
+            "participant_video": "true",
+            "join_before_host": "true",
+            "audio": "voip",
+        }
+    }
 
     headers = {'authorization': 'Bearer ' + generateToken(key, sec),
                'content-type': 'application/json'}
