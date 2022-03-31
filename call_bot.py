@@ -10,6 +10,7 @@ from zoom_api import createMeeting
 medsenger_api = AgentApiClient(APP_KEY, MAIN_HOST, debug=True)
 app = Flask(__name__)
 
+
 def get_sign(number):
     iat = int(time.time() - 30)
     exp = iat + 60 * 60 * 2
@@ -25,6 +26,7 @@ def get_sign(number):
         "tokenExp": iat + 60 * 60 * 2
     }
     return jws.sign(oPayload, ZOOM_SECRET, algorithm="HS256", headers=oHeader)
+
 
 @app.route('/status', methods=['POST'])
 def status():
@@ -61,11 +63,13 @@ def settings():
 
     return render_template('settings.html')
 
+
 @app.route('/<call_id>/<call_pass>', methods=['GET'])
 def call(call_id, call_pass):
     sign = get_sign(call_id)
     print(sign)
     return render_template('call.html', call_id=call_id, call_pass=call_pass, signature=sign, api_key=ZOOM_KEY)
+
 
 @app.route('/call', methods=['GET'])
 def create_call():
@@ -84,9 +88,11 @@ def create_call():
 
     number, password = createMeeting(key, sec)
     call_url = "https://call.medsenger.ru/{}/{}".format(number, password)
-    medsenger_api.send_message(contract_id, "Видеозвонок от врача.", action_link=call_url, action_type="zoom", send_from="doctor", action_deadline=int(time.time() + 60 * 60))
+    medsenger_api.send_message(contract_id, "Видеозвонок от врача.", action_link=call_url, action_type="zoom", action_name="Подключиться к конференции", send_from="doctor",
+                               action_deadline=int(time.time() + 60 * 60), action_big=True)
 
     return render_template('create_call.html', call_url=call_url)
+
 
 @app.route('/', methods=['GET'])
 def index():
@@ -96,6 +102,7 @@ def index():
 @app.route('/message', methods=['POST'])
 def save_message():
     return "ok"
+
 
 if __name__ == "__main__":
     app.run(port=PORT, host=HOST)
