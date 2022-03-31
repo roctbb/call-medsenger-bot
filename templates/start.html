@@ -12,11 +12,11 @@
 </script>
 
 <div class="text-center">
-    <h2>Конференция запущена!</h2>
+    <h2 style="margin-top: 30px;">Конференция запущена!</h2>
 
-    <img style="margin-top: 25px; margin-bottom: 25px;" src="https://call.medsenger.ru/static/icons8-videocall-94.png" />
+    <p><img style="margin-top: 25px; margin-bottom: 25px;" src="https://call.medsenger.ru/static/icons8-videocall-94.png" /></p>
 
-    <a href="{{ call_url }}" target="_blank" onclick="window.parent.postMessage('close-modal', '*');">Перейти к звонку</a>
+    <a class="btn btn-success btn-lg" href="{{ call_url }}" target="_blank" onclick="window.parent.postMessage('close-modal', '*');">Перейти к звонку</a>
 </div>
 
 </body>
