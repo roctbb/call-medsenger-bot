@@ -1,6 +1,8 @@
 import json
 import time
 from flask import Flask, request, render_template
+
+import zoom_api
 from config import *
 from medsenger_api import *
 import jwt
@@ -86,10 +88,27 @@ def create_call():
     if not key or not sec:
         return "Видеозвонки не настроены."
 
+    calls = {}
+    try:
+        with open('call.json', 'r') as file:
+            calls = json.loads(file.read())
+    except:
+        pass
+
+    for call_id in calls.get(key, []):
+        zoom_api.endMeeting(key, sec, call_id)
+
     number, password = createMeeting(key, sec)
     call_url = "https://call.medsenger.ru/{}/{}".format(number, password)
     medsenger_api.send_message(contract_id, "Видеозвонок от врача.", action_link=call_url, action_type="zoom", action_name="Подключиться к конференции", send_from="doctor",
                                action_deadline=int(time.time() + 60 * 60), action_big=True)
+
+    C = calls.get(key, [])
+    C.append(number)
+    calls[key] = C
+
+    with open('call.json', 'w') as file:
+        file.write(json.dumps(calls))
 
     return render_template('start.html', call_url=call_url, number=number, password=password)
 

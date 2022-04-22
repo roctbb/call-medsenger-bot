@@ -44,3 +44,14 @@ def createMeeting(key, sec):
     y = json.loads(r.text)
 
     return y['id'], y['password']
+
+
+def endMeeting(key, sec, id):
+    headers = {'authorization': 'Bearer ' + generateToken(key, sec),
+               'content-type': 'application/json'}
+    try:
+        r = requests.put(f'https://api.zoom.us/v2/meetings/{id}/status',
+                         headers=headers, data=json.dumps({"action": "end"}))
+        print("end status:", r.status_code)
+    except:
+        pass
