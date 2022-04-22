@@ -95,17 +95,15 @@ def create_call():
     except:
         pass
 
-    for call_id in calls.get(key, []):
-        zoom_api.endMeeting(key, sec, call_id)
+    last_number = calls.get(key, '')
+    if last_number:
+        zoom_api.endMeeting(key, sec, last_number)
 
     number, password = createMeeting(key, sec)
     call_url = "https://call.medsenger.ru/{}/{}".format(number, password)
     medsenger_api.send_message(contract_id, "Видеозвонок от врача.", action_link=call_url, action_type="zoom", action_name="Подключиться к конференции", send_from="doctor",
                                action_deadline=int(time.time() + 60 * 60), action_big=True)
-
-    C = calls.get(key, [])
-    C.append(number)
-    calls[key] = C
+    calls[key] = number
 
     with open('call.json', 'w') as file:
         file.write(json.dumps(calls))
