@@ -50,7 +50,7 @@ def createMeeting(key, sec):
 
     a = json.loads(r.text)
 
-    return y['id'], y['password'], a.get('host_key')
+    return y['id'], y['password'], a.get('host_key'), y.get('join_url')
 
 
 def endMeeting(key, sec, id):
