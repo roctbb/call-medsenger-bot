@@ -103,7 +103,7 @@ def create_call():
     call_url = "https://call.medsenger.ru/{}/{}".format(number, password)
     medsenger_api.send_message(contract_id, "Видеозвонок от врача.", action_link=call_url, action_type="zoom", action_name="Подключиться к конференции", send_from="doctor",
                                action_deadline=int(time.time() + 60 * 60), action_big=True)
-    medsenger_api.send_message(contract_id, "Для подключения через приложение Zoom: - номер конференции: {}\n - пароль: {}\n - ключ организатора: {}\n\nДля ввода ключа организатора нажмите <i>Участники -> Подробнее -> Принять роль организатора</i>.".format(number, password, host_key), only_doctor=True)
+    medsenger_api.send_message(contract_id, "Для подключения через приложение Zoom:\n - номер конференции: {}\n - пароль: {}\n - ключ организатора: {}\n\nДля ввода ключа организатора нажмите <i>Участники -> Подробнее -> Принять роль организатора</i>.".format(number, password, host_key), only_doctor=True)
 
     calls[key] = number
 
