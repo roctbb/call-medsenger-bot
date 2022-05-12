@@ -32,6 +32,7 @@ def createMeeting(key, sec):
             "participant_video": "true",
             "join_before_host": "true",
             "audio": "voip",
+            "auto_recording": "local"
         }
     }
 
