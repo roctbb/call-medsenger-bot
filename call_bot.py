@@ -69,8 +69,18 @@ def settings():
 @app.route('/<call_id>/<call_pass>', methods=['GET'])
 def call(call_id, call_pass):
     sign = get_sign(call_id)
-    print(sign)
-    return render_template('call.html', call_id=call_id, call_pass=call_pass, signature=sign, api_key=ZOOM_KEY)
+
+    calls = {}
+    try:
+        with open('call.json', 'r') as file:
+            calls = json.loads(file.read())
+    except:
+        pass
+
+    if not calls or int(call_id) in calls.values():
+        return render_template('call.html', call_id=call_id, call_pass=call_pass, signature=sign, api_key=ZOOM_KEY)
+    else:
+        return "<h1>Эта конференция уже завершена.</h1>"
 
 
 @app.route('/call', methods=['GET'])
@@ -102,7 +112,7 @@ def create_call():
     number, password, host_key = createMeeting(key, sec)
     call_url = "https://call.medsenger.ru/{}/{}".format(number, password)
     medsenger_api.send_message(contract_id, "Видеозвонок от врача.", action_link=call_url, action_type="zoom", action_name="Подключиться к конференции", send_from="doctor",
-                               action_deadline=int(time.time() + 60 * 60), action_big=True)
+                               action_deadline=int(time.time() + 60 * 15), action_big=True)
     medsenger_api.send_message(contract_id, "Для подключения через приложение Zoom:\n - номер конференции: {}\n - пароль: {}\n - ключ организатора: {}\n\nДля ввода ключа организатора нажмите <i>Участники -> Подробнее -> Принять роль организатора</i>.".format(number, password, host_key), only_doctor=True)
 
     calls[key] = number
