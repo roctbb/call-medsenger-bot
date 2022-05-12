@@ -43,7 +43,13 @@ def createMeeting(key, sec):
 
     y = json.loads(r.text)
 
-    return y['id'], y['password']
+    r = requests.get(
+        f'https://api.zoom.us/v2/users/me/',
+        headers=headers)
+
+    a = json.loads(r.text)
+
+    return y['id'], y['password'], a.get('host_key')
 
 
 def endMeeting(key, sec, id):
