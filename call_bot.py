@@ -1,6 +1,6 @@
 import json
 import time
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 
 import zoom_api
 from config import *
@@ -65,6 +65,23 @@ def settings():
 
     return render_template('settings.html')
 
+@app.route('/check/<call_id>', methods=['GET'])
+def check_call(call_id):
+    calls = {}
+    try:
+        with open('call.json', 'r') as file:
+            calls = json.loads(file.read())
+    except:
+        pass
+
+    if not calls or int(call_id) in calls.values():
+        return jsonify({
+            "status": "active"
+        })
+    else:
+        return jsonify({
+            "status": "ended"
+        })
 
 @app.route('/<call_id>/<call_pass>', methods=['GET'])
 def call(call_id, call_pass):
@@ -112,8 +129,8 @@ def create_call():
     number, password, host_key, join_url = createMeeting(key, sec)
     call_url = "https://call.medsenger.ru/{}/{}".format(number, password)
     medsenger_api.send_message(contract_id, "Видеозвонок от врача.", action_link=call_url, action_type="zoom", action_name="Подключиться к конференции", send_from="doctor",
-                               action_deadline=int(time.time() + 60 * 15), action_big=True)
-    medsenger_api.send_message(contract_id, "Для подключения через приложение Zoom:\n - номер конференции: {}\n - пароль: {}\n - ключ организатора: {}\n\nДля ввода ключа организатора нажмите <i>Участники -> Подробнее -> Принять роль организатора</i>.".format(number, password, host_key), only_doctor=True)
+                               action_deadline=int(time.time() + 60 * 25), action_big=True)
+    medsenger_api.send_message(contract_id, "Для подключения через приложение Zoom:\n - номер конференции: {}\n - пароль: {}\n - ключ организатора: {}\n\n<a href='{}' target='_blank'>{}</a>\n\nДля ввода ключа организатора нажмите <i>Участники -> Подробнее -> Принять роль организатора</i>.".format(number, password, host_key, join_url, join_url), only_doctor=True, action_deadline=int(time.time() + 60 * 25))
 
     calls[key] = number
 
