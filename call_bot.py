@@ -1,7 +1,7 @@
 import json
 import time
 from flask import Flask, request, render_template, jsonify
-
+from flask_cors import CORS
 import zoom_api
 from config import *
 from medsenger_api import *
@@ -11,6 +11,7 @@ from zoom_api import createMeeting
 
 medsenger_api = AgentApiClient(APP_KEY, MAIN_HOST, debug=True)
 app = Flask(__name__)
+CORS(app)
 
 
 def get_sign(number):

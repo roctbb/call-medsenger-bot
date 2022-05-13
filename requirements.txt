@@ -2,3 +2,4 @@ Flask
 requests
 medsenger-api
 python-jose
+flask-cors
