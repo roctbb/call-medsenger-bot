@@ -114,7 +114,8 @@ def create_call():
     sec = info.get('doctor_zoom_sec')
 
     if not key or not sec:
-        return "Видеозвонки не настроены."
+        key, sec = DEFAULT_ACCOUNT
+        # return "Видеозвонки не настроены."
 
     calls = {}
     try:
