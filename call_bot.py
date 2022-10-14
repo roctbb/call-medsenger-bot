@@ -73,7 +73,7 @@ def get_appointment(args, form):
 @app.route('/<call_id>/<call_pass>', methods=['GET'])
 def call(call_id, call_pass):
     sign = get_sign(call_id)
-    if call_manager.check_call(call_pass):
+    if call_manager.check_call(call_id):
         return render_template('call.html', call_id=call_id, call_pass=call_pass, signature=sign, api_key=ZOOM_KEY)
     else:
         return "<h1>Эта конференция уже завершена.</h1>"
