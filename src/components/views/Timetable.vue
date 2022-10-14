@@ -22,7 +22,7 @@
                     <img :src="tt[i][j].patient_sex == 'male' ? images.male_patient : images.female_patient"
                          height="35" :title="tt[i][j].patient_name" v-if="tt[i][j].status == 'scheduled'">
                     <img :src="tt[i][j].patient_sex == 'male' ? images.finished_male_patient : images.finished_female_patient"
-                         height="35" :title="tt[i][j].patient_name + ' (завершен)'" v-if="tt[i][j].status == 'finished'">
+                         height="35" :title="tt[i][j].patient_name + ' (завершен)'" v-else-if="tt[i][j].status == 'finished'">
                     <input type="checkbox" :disabled="expired(`${day.date} ${time}`)"
                            @change="change_tt(tt[i][j], day, time)" v-model="tt[i][j]" v-else/>
                 </td>
