@@ -74,7 +74,7 @@ def get_appointment(args, form):
 @verify_args
 def call(args, form, call_id, call_pass):
     sign = get_sign(call_id)
-    if call_manager.check_call(call_id):
+    if call_manager.check_call(call_pass):
         return render_template('call.html', call_id=call_id, call_pass=call_pass, signature=sign, api_key=ZOOM_KEY)
     else:
         return "<h1>Эта конференция уже завершена.</h1>"
@@ -156,7 +156,6 @@ def save_appointment(args, form):
 
 
 @app.route('/check/<int:call_id>', methods=['GET'])
-@verify_args
 def check_call(args, form, call_id):
     return jsonify({
         'status': 'active' if call_manager.check_call(call_id) else 'ended'
