@@ -154,7 +154,7 @@ def save_appointment(args, form):
     return 'ok'
 
 
-@app.route('/check/<int:call_id>', methods=['GET'])
+@app.route('/check/<call_id>', methods=['GET'])
 def check_call(call_id):
     return jsonify({
         'status': 'active' if call_manager.check_call(call_id) else 'ended'
