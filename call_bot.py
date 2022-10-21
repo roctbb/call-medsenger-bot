@@ -59,7 +59,24 @@ def remove(data):
 @app.route('/settings', methods=['GET'])
 @verify_args
 def get_settings(args, form):
-    contract = contract_manager.get(args.get('contract_id'))
+    contract_id = request.args.get('contract_id', '')
+
+    if contract_manager.not_exists(contract_id):
+        contract_manager.add(contract_id)
+
+    contract = contract_manager.get(contract_id)
+    return get_ui(contract, 'settings')
+
+
+@app.route('/call', methods=['GET'])
+@verify_args
+def get_call(args, form):
+    contract_id = request.args.get('contract_id', '')
+
+    if contract_manager.not_exists(contract_id):
+        contract_manager.add(contract_id)
+
+    contract = contract_manager.get(contract_id)
     return get_ui(contract, 'settings')
 
 

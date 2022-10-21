@@ -38,6 +38,11 @@ class ContractManager(Manager):
         except Exception as e:
             log(e)
 
+    def not_exists(self, contract_id):
+        contract = Contract.query.filter_by(id=contract_id).first()
+
+        return not contract
+
     def get_patient(self, contract_id):
         contract = Contract.query.filter_by(id=contract_id).first()
 
