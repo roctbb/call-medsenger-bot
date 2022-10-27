@@ -93,7 +93,7 @@ def call(call_id, call_pass):
     if call_manager.check_call(call_id):
         return render_template('call.html', call_id=call_id, call_pass=call_pass, signature=sign, api_key=ZOOM_KEY)
     else:
-        return "<h1>Эта конференция уже завершена.</h1>"
+        return "<h1>Этот видеозвонок уже завершен.</h1>"
 
 
 # settings api
@@ -195,6 +195,11 @@ def start_call(args, form):
 
     join_url, call_url = call_manager.start_call(contract_id, timeslot_id)
     return jsonify({'join_url': join_url, 'call_url': call_url})
+
+
+@app.route('/close', methods=['GET'])
+def close():
+    return render_template('close.html')
 
 
 with app.app_context():

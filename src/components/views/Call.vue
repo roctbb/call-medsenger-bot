@@ -2,10 +2,10 @@
     <div class="text-center">
         <p><img :src="images.start_video_call" height="110"></p>
         <div v-if="mode == 'main'">
-            <button class="btn btn-lg btn-success" @click="start()">Начать конференцию</button>
+            <button class="btn btn-lg btn-success" @click="start()">Начать видеозвонок</button>
         </div>
         <div v-else>
-            <h3>Конференция запущена!</h3>
+            <h3>Видеозвонок запущен!</h3>
             <a class="btn btn-lg btn-primary" :href="call_url" target="_blank" @click="close()">Перейти к звонку в
                 браузере</a>
             <a class="btn btn-lg btn-success" :href="join_url" target="_blank" @click="close()">Открыть в приложении

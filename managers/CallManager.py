@@ -83,7 +83,7 @@ class CallManager(Manager):
                                         action_type='zoom', action_name='Подключиться к конференции',
                                         send_from='doctor', action_deadline=int(time.time() + 60 * 25))
         self.medsenger_api.send_message(contract_id,
-                                        "Для подключения через приложение Zoom:\n " +
+                                        "Для подключения к звонку:\n " +
                                         "- номер конференции: {}\n ".format(number) +
                                         "- пароль: {}\n - ключ организатора: {}\n\n".format(password, host_key) +
                                         "<a href=\'{}' target='_blank'>{}</a>\n\n".format(join_url, join_url) +
@@ -100,8 +100,15 @@ class CallManager(Manager):
 
     def iterate(self, app):
         with app.app_context():
-            call_time = datetime.now().replace(second=0, microsecond=0) + timedelta(minutes=10)
+            notification_time = datetime.now().replace(second=0, microsecond=0) + timedelta(minutes=10)
+            call_time = datetime.now().replace(second=0, microsecond=0)
             timeslots = TimeSlot.query.filter_by(date=call_time, status='scheduled').all()
+            timeslots += TimeSlot.query.filter_by(date=call_time, status='scheduled').all()
             for timeslot in timeslots:
-                self.start_call(timeslot.contract_id, timeslot.id)
+                if timeslot.date == call_time:
+                    self.start_call(timeslot.contract_id, timeslot.id)
+                if timeslot.date == notification_time:
+                    self.medsenger_api.send_message(timeslot.contract_id,
+                                                    'Запланированный видеозвонок начнется через 10 минут.',
+                                                    action_deadline=int(time.time() + 60 * 10))
 
