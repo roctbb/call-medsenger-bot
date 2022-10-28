@@ -102,12 +102,12 @@ class CallManager(Manager):
         with app.app_context():
             notification_time = datetime.now().replace(second=0, microsecond=0) + timedelta(minutes=10)
             call_time = datetime.now().replace(second=0, microsecond=0)
-            timeslots = TimeSlot.query.filter_by(date=call_time, status='scheduled').all()
+            timeslots = TimeSlot.query.filter_by(date=notification_time, status='scheduled').all()
             timeslots += TimeSlot.query.filter_by(date=call_time, status='scheduled').all()
             for timeslot in timeslots:
                 if timeslot.date == call_time:
                     self.start_call(timeslot.contract_id, timeslot.id)
-                if timeslot.date == notification_time:
+                elif timeslot.date == notification_time:
                     self.medsenger_api.send_message(timeslot.contract_id,
                                                     'Запланированный видеозвонок начнется через 10 минут.',
                                                     action_deadline=int(time.time() + 60 * 10))
