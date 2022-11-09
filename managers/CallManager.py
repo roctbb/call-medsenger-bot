@@ -82,14 +82,6 @@ class CallManager(Manager):
         self.medsenger_api.send_message(contract_id, 'Видеозвонок от врача.', action_link=call_url,
                                         action_type='zoom', action_name='Подключиться к конференции',
                                         send_from='doctor', action_deadline=int(time.time() + 60 * 25))
-        self.medsenger_api.send_message(contract_id,
-                                        "Для подключения к звонку:\n " +
-                                        "- номер конференции: {}\n ".format(number) +
-                                        "- пароль: {}\n - ключ организатора: {}\n\n".format(password, host_key) +
-                                        "<a href=\'{}' target='_blank'>{}</a>\n\n".format(join_url, join_url) +
-                                        "Для ввода ключа организатора нажмите " +
-                                        "<i>Участники -> Подробнее -> Принять роль организатора</i>.",
-                                        only_doctor=True, action_deadline=int(time.time() + 60 * 25))
 
         if timeslot_id:
             timeslot = TimeSlot.query.filter_by(id=timeslot_id).first()
