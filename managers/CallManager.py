@@ -56,6 +56,7 @@ class CallManager(Manager):
             call = self.get(key)
             zoom_api.endMeeting(key, sec, call.number)
             call.number = None
+            log('call {} ended successfully'.format(call.number))
             self.__commit__()
         except Exception as e:
             call, is_new = self.add({
@@ -102,5 +103,5 @@ class CallManager(Manager):
                 elif timeslot.date == notification_time:
                     self.medsenger_api.send_message(timeslot.contract_id,
                                                     'Запланированный видеозвонок начнется через 10 минут.',
-                                                    action_deadline=int(time.time() + 60 * 10))
+                                                    action_deadline=int(time.time() + 60 * 30))
 
