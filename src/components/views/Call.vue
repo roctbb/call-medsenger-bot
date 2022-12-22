@@ -49,7 +49,7 @@ export default {
         process_load_answer: function (response) {
             this.call_url = response.data.call_url
             this.join_url = response.data.join_url
-            this.vc_doctor_url = response.data.vc_doctor_url
+            this.vc_doctor_url = response.data.vc_doctor_link
             this.mode = 'started'
         },
         close: function () {
