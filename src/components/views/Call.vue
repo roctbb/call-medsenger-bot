@@ -6,9 +6,12 @@
         </div>
         <div v-else>
             <h3>Видеозвонок запущен!</h3>
-            <a class="btn btn-lg btn-primary" :href="call_url" target="_blank" @click="close()">Перейти к звонку в
+            <a v-if="call_url" class="btn btn-lg btn-primary" :href="call_url" target="_blank" @click="close()">Перейти к звонку в
                 браузере</a>
-            <a class="btn btn-lg btn-success" :href="join_url" target="_blank" @click="close()">Открыть в приложении</a>
+
+            <a v-if="join_url" class="btn btn-lg btn-success" :href="join_url" target="_blank" @click="close()">Открыть в приложении</a>
+
+            <a v-if="vc_doctor_url" class="btn btn-lg btn-primary" :href="vc_doctor_url" target="_blank" @click="close()">Перейти к звонку</a>
         </div>
     </div>
 </template>
@@ -22,7 +25,8 @@ export default {
         return {
             mode: 'main',
             call_url: undefined,
-            join_url: undefined
+            join_url: undefined,
+            vc_doctor_url: undefined
         }
     },
     methods: {
@@ -45,6 +49,7 @@ export default {
         process_load_answer: function (response) {
             this.call_url = response.data.call_url
             this.join_url = response.data.join_url
+            this.vc_doctor_url = response.data.vc_doctor_url
             this.mode = 'started'
         },
         close: function () {

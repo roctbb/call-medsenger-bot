@@ -19,3 +19,5 @@ API_DEBUG = ''
 ZOOM_KEY = ''
 ZOOM_SECRET = ''
 DEFAULT_ACCOUNT = ('', '')
+
+VC_KEY = ''

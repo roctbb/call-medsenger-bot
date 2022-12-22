@@ -183,8 +183,8 @@ def check_call(call_id):
 def create_call(args, form):
     contract_id = args.get('contract_id')
 
-    join_url, call_url = call_manager.start_call(contract_id)
-    return jsonify({'join_url': join_url, 'call_url': call_url})
+    links = call_manager.start_call(contract_id)
+    return jsonify(links)
 
 
 @app.route('/start_call_now', methods=['POST'])
@@ -193,8 +193,8 @@ def start_call(args, form):
     contract_id = request.json.get('contract_id')
     timeslot_id = request.json.get('timeslot_id', None)
 
-    join_url, call_url = call_manager.start_call(contract_id, timeslot_id)
-    return jsonify({'join_url': join_url, 'call_url': call_url})
+    links = call_manager.start_call(contract_id, timeslot_id)
+    return jsonify(links)
 
 
 @app.route('/close', methods=['GET'])
