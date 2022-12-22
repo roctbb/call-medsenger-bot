@@ -9,7 +9,7 @@ from manage import *
 medsenger_api = AgentApiClient(APP_KEY, MAIN_HOST, AGENT_ID, API_DEBUG)
 contract_manager = ContractManager(medsenger_api, db)
 timetable_manager = TimetableManager(medsenger_api, db)
-call_manager = CallManager(medsenger_api, db)
+call_manager = CallManager(medsenger_api, contract_manager, db)
 
 
 @app.route('/')
