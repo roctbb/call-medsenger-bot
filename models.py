@@ -8,7 +8,7 @@ class Contract(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     is_active = db.Column(db.Boolean, default=True)
     agent_token = db.Column(db.String(255), nullable=True)
-    engine = db.Column(db.String(255), server_default='zoom'),
+    engine = db.Column(db.String(255), nullable=True, server_default='zoom')
 
     def as_dict(self, native=False):
         serialized = {
