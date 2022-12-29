@@ -102,11 +102,11 @@ class CallManager(Manager):
             doctor_link, patient_link = vc_api.createMeeting()
 
             self.medsenger_api.send_message(contract_id, 'Видеозвонок c пациентом.', action_link=doctor_link,
-                                            action_type='vc', action_name='Подключиться к конференции',
+                                            action_type='url', action_name='Подключиться к конференции',
                                             only_doctor=True, action_deadline=int(time.time() + 60 * 40))
 
             self.medsenger_api.send_message(contract_id, 'Видеозвонок от врача.', action_link=patient_link,
-                                            action_type='vc', action_name='Подключиться к конференции',
+                                            action_type='url', action_name='Подключиться к конференции',
                                             only_patient=True, action_deadline=int(time.time() + 60 * 40))
 
             if timeslot_id:
