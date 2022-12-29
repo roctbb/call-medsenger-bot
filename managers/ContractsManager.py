@@ -16,6 +16,8 @@ class ContractManager(Manager):
             self.db.session.add(contract)
 
         contract.is_active = True
+
+        print("Engine is:", engine)
         if engine:
             contract.engine = engine
 
