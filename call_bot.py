@@ -89,6 +89,7 @@ def instant_call(args, form):
     if contract_manager.not_exists(contract_id):
         contract_manager.add(contract_id)
 
+    contract = contract_manager.get(contract_id)
     call_manager.start_call(contract_id)
     return get_ui(contract, 'done')
 
