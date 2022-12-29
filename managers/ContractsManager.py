@@ -7,7 +7,7 @@ class ContractManager(Manager):
     def __init__(self, *args):
         super(ContractManager, self).__init__(*args)
 
-    def add(self, contract_id):
+    def add(self, contract_id, engine):
         contract = Contract.query.filter_by(id=contract_id).first()
         is_new = False
         if not contract:
@@ -16,6 +16,9 @@ class ContractManager(Manager):
             self.db.session.add(contract)
 
         contract.is_active = True
+        if engine:
+            contract.engine = engine
+
         contract.agent_token = self.medsenger_api.get_agent_token(contract_id).get('agent_token')
 
         self.__commit__()

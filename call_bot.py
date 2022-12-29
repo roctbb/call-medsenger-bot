@@ -39,7 +39,9 @@ def init(data):
     if not contract_id:
         abort(422)
 
-    contract, is_new = contract_manager.add(contract_id)
+    engine = data.get('params', {}).get('engine')
+
+    contract, is_new = contract_manager.add(contract_id, engine)
     return "ok"
 
 
