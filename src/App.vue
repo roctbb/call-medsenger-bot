@@ -64,6 +64,8 @@ export default {
                 this.state = 'calls';
             } else if (this.window_mode == 'appointment') {
                 this.state = 'appointment';
+            } else if (this.window_mode == 'done') {
+                this.state = 'done';
             }
         },
         process_load_error: function (response) {

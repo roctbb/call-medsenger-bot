@@ -81,6 +81,17 @@ def get_call(args, form):
     contract = contract_manager.get(contract_id)
     return get_ui(contract, 'settings')
 
+@app.route('/instant_call', methods=['GET'])
+@verify_args
+def instant_call(args, form):
+    contract_id = request.args.get('contract_id', '')
+
+    if contract_manager.not_exists(contract_id):
+        contract_manager.add(contract_id)
+
+    call_manager.start_call(contract_id)
+    return get_ui(contract, 'done')
+
 
 @app.route('/appointment', methods=['GET'])
 @verify_args
