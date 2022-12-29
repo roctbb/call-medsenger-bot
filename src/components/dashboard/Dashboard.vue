@@ -1,9 +1,6 @@
 <template>
     <div>
         <div class="btn-group">
-            <button :class="'btn btn-sm ' + btn_color('start_call')"
-                    @click="change_state('start_call')">Запустить звонок
-            </button>
             <button :class="'btn btn-sm ' + btn_color('timetable')"
                     @click="change_state('timetable')">Расписание
             </button>
@@ -12,9 +9,6 @@
             </button>
         </div>
 
-        <div style="margin-top: 10px" v-if="state == 'start_call'">
-            <call/>
-        </div>
         <div style="margin-top: 10px" v-if="state == 'timetable'">
             Пожалуйста, отметьте удобное для Вас время.
             <div class="row" style="margin-left: 0">
@@ -48,7 +42,7 @@ export default {
     },
     data: function () {
         return {
-            state: 'start_call',
+            state: 'timetable',
             loaded: false,
             errors: []
         }
