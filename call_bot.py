@@ -105,7 +105,7 @@ def order(data):
 
         contract = contract_manager.get(contract_id)
         call_manager.start_call(contract_id)
-        return get_ui(contract, 'done')
+        return 'ok'
 
 
 @app.route('/appointment', methods=['GET'])
