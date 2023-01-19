@@ -102,10 +102,9 @@ def order(data):
     if data['order'] == 'start_call':
         if contract_manager.not_exists(contract_id):
             contract_manager.add(contract_id)
-
-        contract = contract_manager.get(contract_id)
         call_manager.start_call(contract_id)
         return 'ok'
+    return 'not found'
 
 
 @app.route('/appointment', methods=['GET'])
