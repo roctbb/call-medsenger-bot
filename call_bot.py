@@ -99,11 +99,21 @@ def instant_call(args, form):
 @verify_json
 def order(data):
     contract_id = data.get('contract_id')
+    if contract_manager.not_exists(contract_id):
+        contract_manager.add(contract_id)
+
     if data['order'] == 'start_call':
         if contract_manager.not_exists(contract_id):
             contract_manager.add(contract_id)
         call_manager.start_call(contract_id)
         return 'ok'
+    if data['order'] == 'select_call_time':
+        medsenger_api.send_message(contract_id, 'Вам необходимо запланировать онлайн-встречу с врачом. ' +
+                                   'Для этого воспользуйтесь кнопкой:',
+                                   action_name='Выбрать время', action_link='appointment', action_big=False,
+                                   only_patient=True, action_onetime=True)
+        return 'ok'
+
     return 'not found'
 
 
