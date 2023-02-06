@@ -77,12 +77,14 @@ class CallManager(Manager):
         call = Call.query.filter_by(number=call_id).first()
         return call is not None
 
+
+
     def start_call(self, contract_id, timeslot_id=None):
         info = self.medsenger_api.get_patient_info(contract_id)
         contract = self.contracts_manager.get(contract_id)
 
         if contract.engine == 'zoom':
-            number, password, host_key, join_url, join_url = self.create_call(info)
+            number, password, host_key, join_url, join_url = self.create_zoom_call(info)
             call_url = "{}/{}/{}".format(LOCALHOST, number, password)
 
             self.medsenger_api.send_message(contract_id, 'Видеозвонок от врача.', action_link=call_url,
