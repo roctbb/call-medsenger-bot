@@ -9,3 +9,5 @@ alembic
 flask-sqlalchemy
 APScheduler
 tzlocal
+psycopg2-bin
+sentry-sdk
