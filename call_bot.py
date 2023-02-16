@@ -32,6 +32,20 @@ def status(data):
 # contract management api
 
 
+@app.route('/report', methods=['POST'])
+@verify_json
+def report(data):
+    clinic_id = data.get('clinic_id')
+    if not clinic_id:
+        abort(422)
+
+    return jsonify([
+        {
+            "title": "Видеоконсультации",
+            "count": 5
+        }
+    ])
+
 @app.route('/init', methods=['POST'])
 @verify_json
 def init(data):
