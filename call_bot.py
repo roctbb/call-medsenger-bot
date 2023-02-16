@@ -36,6 +36,8 @@ def status(data):
 @verify_json
 def report(data):
     clinic_id = data.get('clinic_id')
+    date_from = data.get('from')
+    date_to = data.get('to')
     if not clinic_id:
         abort(422)
 
