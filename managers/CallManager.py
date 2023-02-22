@@ -175,7 +175,7 @@ class CallManager(Manager):
 
     def check_rooms(self, app):
         with app.app_context():
-            notification_time = datetime.now() - timedelta(minutes=40)
+            notification_time = datetime.now() - timedelta(minutes=45)
             room_ids = [room.as_dict()['id'] for room in Room.query.filter(Room.created >= notification_time,
                                                                            not Room.had_connection).all()]
             for room_id in room_ids:
