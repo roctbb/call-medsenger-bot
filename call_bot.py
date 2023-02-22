@@ -44,9 +44,10 @@ def report(data):
     return jsonify([
         {
             "title": "Видеоконсультации",
-            "count": 5
+            "count": call_manager.get_report(clinic_id, date_from, date_to)
         }
     ])
+
 
 @app.route('/init', methods=['POST'])
 @verify_json

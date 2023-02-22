@@ -6,6 +6,7 @@ db = SQLAlchemy()
 # models
 class Contract(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    clinic_id = db.Column(db.Integer, nullable=True)
     is_active = db.Column(db.Boolean, default=True)
     agent_token = db.Column(db.String(255), nullable=True)
     engine = db.Column(db.String(255), nullable=True, server_default='zoom')
@@ -13,6 +14,7 @@ class Contract(db.Model):
     def as_dict(self, native=False):
         serialized = {
             "id": self.id,
+            "clinic_id": self.id,
             "is_active": self.is_active,
             "engine": self.engine
         }
@@ -50,4 +52,19 @@ class Call(db.Model):
         return {
             'key': self.key,
             'number': self.number
+        }
+
+
+class Room(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    had_connection = db.Column(db.Boolean, nullable=True)
+    created = db.Column(db.DateTime(), nullable=False)
+    contract_id = db.Column(db.Integer, db.ForeignKey('contract.id', ondelete="CASCADE"), nullable=True)
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'created': self.created.timestamp(),
+            'had_connection': self.had_connection,
+            'contract_id': self.contract_id
         }

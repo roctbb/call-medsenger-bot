@@ -5,7 +5,7 @@ import zoom_api
 from helpers import log, get_sign
 from managers.Manager import Manager
 from managers.ContractsManager import ContractManager
-from models import Contract, TimeSlot, Call
+from models import Contract, TimeSlot, Call, Room
 from config import *
 from datetime import datetime, timedelta
 import time
@@ -16,7 +16,7 @@ class CallManager(Manager):
         super(CallManager, self).__init__(*args)
         self.contracts_manager = contracts_manager
 
-    def add(self, call_info):
+    def add_call(self, call_info):
         call = Call.query.filter_by(key=call_info.get('key', '')).first()
         is_new = False
         if not call:
@@ -29,23 +29,49 @@ class CallManager(Manager):
 
         return call, is_new
 
-    def remove(self, key):
-        try:
-            call = Contract.query.filter_by(key=key).first()
-
-            if not call:
-                raise Exception("No key = {} found".format(key))
-            self.__commit__()
-        except Exception as e:
-            log(e)
-
-    def get(self, key):
+    def get_call(self, key):
         call = Call.query.filter_by(key=key).first()
 
         if not call:
             raise Exception("No key = {} found".format(key))
 
         return call
+
+    def add_room(self, room_info):
+        room = Room.query.filter_by(id=room_info.get('id', '')).first()
+        is_new = False
+        if not room:
+            is_new = True
+            room = Room(id=room_info['id'])
+            self.db.session.add(room)
+
+        room.created = datetime.now()
+        room.contract_id = room_info['contract_id']
+        room.state = 'OPENED'
+        self.__commit__()
+
+        return room, is_new
+
+    def get_room(self, room_id):
+        room = Room.query.filter_by(id=room_id).first()
+
+        if not room:
+            raise Exception("No id = {} found".format(room_id))
+
+        return room
+
+    def update_room_state(self, room_id):
+        try:
+            room = Contract.query.filter_by(id=room_id).first()
+
+            if not room:
+                raise Exception("No room_id = {} found".format(room_id))
+
+            room.had_connection = True
+
+            self.__commit__()
+        except Exception as e:
+            log(e)
 
     def create_zoom_call(self, patient_info):
         key = patient_info.get('doctor_zoom_key')
@@ -56,13 +82,13 @@ class CallManager(Manager):
             # return "Видеозвонки не настроены."
 
         try:
-            call = self.get(key)
+            call = self.get_call(key)
             zoom_api.endMeeting(key, sec, call.number)
             call.number = None
             log('call {} ended successfully'.format(call.number))
             self.__commit__()
         except Exception as e:
-            call, is_new = self.add({
+            call, is_new = self.add_call({
                 'key': key,
                 'number': None,
             })
@@ -76,8 +102,6 @@ class CallManager(Manager):
     def check_call(self, call_id):
         call = Call.query.filter_by(number=call_id).first()
         return call is not None
-
-
 
     def start_call(self, contract_id, timeslot_id=None):
         info = self.medsenger_api.get_patient_info(contract_id)
@@ -101,7 +125,11 @@ class CallManager(Manager):
                        "call_url": call_url
                    },
         else:
-            doctor_link, patient_link = vc_api.createMeeting()
+            room_id, doctor_link, patient_link = vc_api.createMeeting()
+            self.add_room({
+                "id": room_id,
+                "contract_id": contract_id
+            })
 
             self.medsenger_api.send_message(contract_id, 'Видеозвонок c пациентом.', action_link=doctor_link,
                                             action_type='url', action_name='Подключиться к конференции',
@@ -121,6 +149,16 @@ class CallManager(Manager):
                 "vc_patient_link": patient_link
             }
 
+    def get_report(self, clinic_id, date_from, date_to):
+        date_from = datetime.fromtimestamp(date_from)
+        date_to = datetime.fromtimestamp(date_to)
+        contracts = self.contracts_manager.get_clinic_contracts(clinic_id)
+        meetings_held = Room.query.filter(Room.contract_id.in_(contracts),
+                                          Room.created >= date_from,
+                                          Room.created <= date_to,
+                                          Room.had_connection).all()
+        return len(meetings_held)
+
     def iterate(self, app):
         with app.app_context():
             notification_time = datetime.now().replace(second=0, microsecond=0) + timedelta(minutes=10)
@@ -134,3 +172,13 @@ class CallManager(Manager):
                     self.medsenger_api.send_message(timeslot.contract_id,
                                                     'Запланированный видеозвонок начнется через 10 минут.',
                                                     action_deadline=int(time.time() + 60 * 30))
+
+    def check_rooms(self, app):
+        with app.app_context():
+            notification_time = datetime.now() - timedelta(minutes=40)
+            room_ids = [room.as_dict()['id'] for room in Room.query.filter(Room.created >= notification_time,
+                                                                           not Room.had_connection).all()]
+            for room_id in room_ids:
+                info = vc_api.getMeetingInfo(room_id)
+                if info.get('had_connection'):
+                    self.update_room_state(room_id)

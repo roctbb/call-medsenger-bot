@@ -8,19 +8,21 @@ def createMeeting():
     headers = {'auth': VC_KEY,
                'content-type': 'application/json'}
     r = requests.post(
-        f'https://vc.medsenger.ru/admin/rooms',
+        VC_URL + f'/admin/rooms',
         headers=headers)
 
     y = json.loads(r.text)
 
-    return 'https://vc.medsenger.ru/?access_key=' + y['keys']['doctor'], \
-           'https://vc.medsenger.ru/?access_key=' + y['keys']['patient']
+    return y['id'], \
+           VC_URL + '/?access_key=' + y['keys']['doctor'], \
+           VC_URL + '/?access_key=' + y['keys']['patient']
 
-def getMeetingInfo():
+
+def getMeetingInfo(room_id):
     headers = {'auth': VC_KEY,
                'content-type': 'application/json'}
     r = requests.get(
-        f'https://vc.medsenger.ru/admin/rooms',
+        VC_URL + f'/admin/rooms/' + str(room_id),
         headers=headers)
 
     y = json.loads(r.text)

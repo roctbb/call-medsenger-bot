@@ -22,6 +22,7 @@ class ContractManager(Manager):
             contract.engine = engine
 
         contract.agent_token = self.medsenger_api.get_agent_token(contract_id).get('agent_token')
+        contract.clinic_id = self.medsenger_api.get_patient_info(contract_id).get('clinic_id')
 
         self.__commit__()
 
@@ -46,6 +47,10 @@ class ContractManager(Manager):
     def not_exists(self, contract_id):
         contract = Contract.query.filter_by(id=contract_id).first()
 
+        if contract and not contract.clinic_id:
+            contract.clinic_id = self.medsenger_api.get_patient_info(contract_id).get('clinic_id')
+            self.__commit__()
+
         return not contract
 
     def get_patient(self, contract_id):
@@ -68,3 +73,6 @@ class ContractManager(Manager):
 
     def get_active_ids(self):
         return [contract.id for contract in Contract.query.filter_by(is_active=True).all()]
+
+    def get_clinic_contracts(self, clinic_id):
+        return [contract.id for contract in Contract.query.filter_by(clinic_id=clinic_id).all()]
