@@ -177,7 +177,7 @@ class CallManager(Manager):
         with app.app_context():
             notification_time = datetime.now() - timedelta(minutes=45)
             room_ids = [room.as_dict()['id'] for room in Room.query.filter(Room.created >= notification_time,
-                                                                           not Room.had_connection).all()]
+                                                                           Room.had_connection.is_(False)).all()]
             for room_id in room_ids:
                 info = vc_api.getMeetingInfo(room_id)
                 if info.get('had_connection'):

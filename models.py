@@ -57,7 +57,7 @@ class Call(db.Model):
 
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    had_connection = db.Column(db.Boolean, nullable=True)
+    had_connection = db.Column(db.Boolean, nullable=True, default=False)
     created = db.Column(db.DateTime(), nullable=False)
     contract_id = db.Column(db.Integer, db.ForeignKey('contract.id', ondelete="CASCADE"), nullable=True)
 
