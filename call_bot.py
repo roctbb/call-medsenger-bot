@@ -32,7 +32,7 @@ def status(data):
 # contract management api
 
 
-@app.route('/report', methods=['POST'])
+@app.route('/report', methods=['GET'])
 @verify_json
 def report(data):
     clinic_id = data.get('clinic_id')
