@@ -62,7 +62,7 @@ class CallManager(Manager):
 
     def update_room_state(self, room_id):
         try:
-            room = Contract.query.filter_by(id=room_id).first()
+            room = Room.query.filter_by(id=room_id).first()
 
             if not room:
                 raise Exception("No room_id = {} found".format(room_id))
