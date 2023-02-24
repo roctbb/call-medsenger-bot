@@ -175,11 +175,10 @@ class CallManager(Manager):
 
     def check_rooms(self, app):
         with app.app_context():
-            notification_time = datetime.now() - timedelta(days=10)  # timedelta(minutes=45)
+            notification_time = datetime.now() - timedelta(minutes=45)
             room_ids = [room.as_dict()['id'] for room in Room.query.filter(Room.created >= notification_time,
                                                                            Room.had_connection.is_(False)).all()]
             for room_id in room_ids:
                 info = vc_api.getMeetingInfo(room_id)
-                print(room_id, info)
                 if info.get('had_connection'):
                     self.update_room_state(room_id)
