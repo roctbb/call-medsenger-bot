@@ -180,5 +180,6 @@ class CallManager(Manager):
                                                                            Room.had_connection.is_(False)).all()]
             for room_id in room_ids:
                 info = vc_api.getMeetingInfo(room_id)
+                print(room_id, info)
                 if info.get('had_connection'):
                     self.update_room_state(room_id)
