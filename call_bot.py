@@ -35,9 +35,9 @@ def status(data):
 @app.route('/report', methods=['POST'])
 @verify_json
 def report(data):
-    clinic_id = data.get('clinic_id')
-    date_from = data.get('from')
-    date_to = data.get('to')
+    clinic_id = int(data.get('clinic_id'))
+    date_from = int(data.get('from'))
+    date_to = int(data.get('to'))
     if not clinic_id:
         abort(422)
 
