@@ -129,6 +129,7 @@ def order(data):
                                    'Для этого воспользуйтесь кнопкой:',
                                    action_name='Выбрать время', action_link='appointment', action_big=False,
                                    only_patient=True, action_onetime=True)
+        medsenger_api.send_message(contract_id, 'Пациенту отправлена ссылка на выбор времени консультации.', only_doctor=True)
         return 'ok'
 
     return 'not found'
@@ -203,6 +204,8 @@ def send_appointment(args, form):
                                'Для этого воспользуйтесь кнопкой:',
                                action_name='Выбрать время', action_link='appointment', action_big=False,
                                only_patient=True, action_onetime=True)
+    medsenger_api.send_message(contract_id, 'Пациенту отправлена ссылка на выбор времени консультации.',
+                               only_doctor=True)
     return 'ok'
 
 
