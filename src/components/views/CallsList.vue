@@ -13,6 +13,7 @@
                         <div v-if="source == 'doctor'">
                             <strong>Пациент:</strong> {{ slot.patient_name }} <br><br>
                             <button class="btn btn-success" @click="start_call(slot)">Начать звонок</button>
+                            <button class="btn btn-danger" @click="cancel_call(slot)">Отменить</button>
                         </div>
                         <div v-else>
                             <strong>Врач:</strong> {{ slot.doctor_name }} <br><br>
@@ -45,7 +46,7 @@ export default {
             this.axios.get(this.url(`/api/settings/get_${this.source}_timetable`)).then((response) => {
                 this.slots = response.data.filter(slot => slot.status == 'scheduled' && slot.timestamp >= moment().unix())
                 this.slots.forEach(slot => {
-                    slot.time = moment.unix(slot.timestamp).format('DD.MM, HH:mm')
+                    slot.time = moment.unix(slot.timestamp).format('DD.MM в HH:mm')
                 })
             })
             this.slots.sort((a, b) => a.timestamp - b.timestamp)
@@ -55,7 +56,7 @@ export default {
         start_call: function (slot) {
             this.$confirm(
                 {
-                    message: `Начать конференцию с пациентом (${slot.patient_name}) сейчас?`,
+                    message: `Начать звонок с пациентом (${slot.patient_name}) сейчас?`,
                     button: {
                         no: 'Нет',
                         yes: 'Да'
@@ -72,7 +73,26 @@ export default {
                     }
                 }
             )
+        },
+        cancel_call: function (slot) {
+            this.$confirm(
+                {
+                    message: `Отменить звонок с пациентом ${slot.patient_name} (${slot.time})?`,
+                    button: {
+                        no: 'Нет',
+                        yes: 'Да'
+                    },
+                    callback: confirm => {
+                        if (confirm) {
+                            this.axios.post(this.url('cancel_call'), slot).then(response => {
+                                Event.fire('action-done')
+                            })
+                        }
+                    }
+                }
+            )
         }
+
     },
     mounted() {
         this.load()

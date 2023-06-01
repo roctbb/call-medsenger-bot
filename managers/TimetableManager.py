@@ -20,8 +20,9 @@ class TimetableManager(Manager):
             self.db.session.add(timeslot)
 
         timeslot.status = timeslot_info['status']
-        timeslot.patient_id = timeslot_info.get('patient_id')
-        timeslot.contract_id=timeslot_info.get('contract_id')
+        if timeslot_info['status'] == 'scheduled':
+            timeslot.patient_id = timeslot_info.get('patient_id')
+            timeslot.contract_id = timeslot_info.get('contract_id')
         self.__commit__()
 
         return timeslot, is_new
@@ -34,6 +35,22 @@ class TimetableManager(Manager):
                 raise Exception("No timeslot_id = {} found".format(timeslot_id))
 
             timeslot.status = 'unavailable'
+
+            self.__commit__()
+        except Exception as e:
+            log(e)
+
+    def cancel(self, timeslot_id):
+        try:
+            timeslot = TimeSlot.query.filter_by(id=timeslot_id).first()
+
+            if not timeslot:
+                raise Exception("No timeslot_id = {} found".format(timeslot_id))
+
+            timeslot.status = 'available'
+
+            timeslot.patient_id = None
+            timeslot.contract_id = None
 
             self.__commit__()
         except Exception as e:

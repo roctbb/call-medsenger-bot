@@ -112,7 +112,7 @@ class CallManager(Manager):
             call_url = "{}/{}/{}".format(LOCALHOST, number, password)
 
             self.medsenger_api.send_message(contract_id, 'Видеозвонок от врача.', action_link=call_url,
-                                            action_type='zoom', action_name='Подключиться к конференции',
+                                            action_type='zoom', action_name='Подключиться к звонку',
                                             send_from='doctor', action_deadline=int(time.time() + 60 * 25))
 
             if timeslot_id:
@@ -132,11 +132,11 @@ class CallManager(Manager):
             })
 
             self.medsenger_api.send_message(contract_id, 'Видеозвонок c пациентом.', action_link=doctor_link,
-                                            action_type='url', action_name='Подключиться к конференции',
+                                            action_type='url', action_name='Подключиться',
                                             only_doctor=True, action_deadline=int(time.time() + 60 * 40))
 
             self.medsenger_api.send_message(contract_id, 'Видеозвонок от врача.', action_link=patient_link,
-                                            action_type='url', action_name='Подключиться к конференции',
+                                            action_type='url', action_name='Подключиться',
                                             only_patient=True, action_deadline=int(time.time() + 60 * 40))
 
             if timeslot_id:

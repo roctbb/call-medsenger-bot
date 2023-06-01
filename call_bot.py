@@ -254,6 +254,26 @@ def start_call(args, form):
     return jsonify(links)
 
 
+@app.route('/cancel_call', methods=['POST'])
+@verify_args
+def cancel_call(args, form):
+    contract_id = request.json.get('contract_id')
+    timeslot = request.json
+    print(timeslot)
+    timetable_manager.cancel(timeslot['id'])
+
+    medsenger_api.send_message(contract_id,
+                               'Онлайн-встреча с врачом  ({}) отменена.'.format(timeslot['time']),
+                               only_patient=True)
+    medsenger_api.send_message(contract_id,
+                               'Онлайн-встреча с пациентом  ({}) отменена.'.format(timeslot['time']),
+                               only_doctor=True)
+
+    return 'ok'
+
+
+
+
 @app.route('/close', methods=['GET'])
 def close():
     return render_template('close.html')
