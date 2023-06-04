@@ -8,7 +8,7 @@
             </div>
             <div v-else>
                 <div class="row">
-                    <card class="col-4" style="grid-column-gap: 0" v-for="slot in slots" :key="slot.id"
+                    <card :class="mobile ? 'col-12' : 'col-4'" style="grid-column-gap: 0" v-for="slot in slots" :key="slot.id"
                           :title="slot.time" :image="images.start_video_call">
                         <div v-if="source == 'doctor'">
                             <strong>Пациент:</strong> {{ slot.patient_name }} <br><br>

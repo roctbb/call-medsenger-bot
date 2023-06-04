@@ -272,8 +272,6 @@ def cancel_call(args, form):
     return 'ok'
 
 
-
-
 @app.route('/close', methods=['GET'])
 def close():
     return render_template('close.html')
