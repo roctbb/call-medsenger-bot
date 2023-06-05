@@ -9,7 +9,11 @@ class TimetableManager(Manager):
         super(TimetableManager, self).__init__(*args)
 
     def add(self, timeslot_info):
-        timeslot = TimeSlot.query.filter_by(id=timeslot_info.get('id')).first()
+        timeslot_id = timeslot_info.get('id')
+        if timeslot_id:
+            timeslot = TimeSlot.query.filter_by(id=timeslot_id).first()
+        else:
+            timeslot = TimeSlot.query.filter_by(date=datetime.fromtimestamp(timeslot_info['timestamp']), doctor_id=timeslot_info['doctor_id']).first()
         is_new = False
         if not timeslot:
             if timeslot_info['status'] == 'unavailable':

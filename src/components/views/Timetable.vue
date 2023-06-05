@@ -87,17 +87,13 @@ export default {
             }
             this.axios.get(this.url('/api/settings/get_doctor_timetable')).then((response) => {
                 this.slots = response.data
-                console.log(this.slots)
                 this.slots.forEach(slot => {
                     let time = moment.unix(slot.timestamp)
                     let i = this.days.findIndex(d => d.date == time.format('DD.MM.YYYY'))
                     let j = this.time_slots.findIndex(t => t == time.format('HH:mm'))
                     this.tt[i][j] = slot.status != 'unavailable'
                     this.tt_slots[i][j] = slot
-                    console.log(i, j, slot)
                 })
-                console.log(this.tt_slots)
-                console.log(this.tt)
                 this.$forceUpdate()
             })
             this.loaded = true
