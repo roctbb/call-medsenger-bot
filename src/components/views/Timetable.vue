@@ -94,6 +94,8 @@ export default {
                     this.tt[i][j] = slot.status != 'unavailable'
                     this.tt_slots[i][j] = slot
                 })
+                console.log(this.tt_slots)
+                console.log(this.tt)
                 this.$forceUpdate()
             })
             this.loaded = true
