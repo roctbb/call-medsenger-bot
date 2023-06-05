@@ -86,6 +86,7 @@ export default {
                     let j = this.time_slots.findIndex(t => t == time.format('HH:mm'))
                     this.tt[i][j] = slot.status == 'scheduled' ||  slot.status == 'finished' ? slot : (slot.status == 'available')
                 })
+                console.log(this.tt)
                 this.$forceUpdate()
             })
             this.loaded = true
