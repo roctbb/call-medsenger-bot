@@ -87,6 +87,7 @@ export default {
             }
             this.axios.get(this.url('/api/settings/get_doctor_timetable')).then((response) => {
                 this.slots = response.data
+                console.log(this.slots)
                 this.slots.forEach(slot => {
                     let time = moment.unix(slot.timestamp)
                     let i = this.days.findIndex(d => d.date == time.format('DD.MM.YYYY'))
