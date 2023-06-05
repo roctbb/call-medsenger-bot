@@ -19,10 +19,15 @@
                 <td class="align-middle font-weight-bold table-info" colspan="1">{{ time }}</td>
                 <td class="align-middle" colspan="1" v-for="(day, i) in days"
                     :style="expired(`${day.date} ${time}`) ? 'background-color: #EEE' : ''">
-                    <img :src="tt[i][j].patient_sex == 'male' ? images.male_patient : images.female_patient"
-                         height="35" :title="tt[i][j].patient_name" v-if="tt[i][j].status == 'scheduled'">
-                    <img :src="tt[i][j].patient_sex == 'male' ? images.finished_male_patient : images.finished_female_patient"
-                         height="35" :title="tt[i][j].patient_name + ' (завершен)'" v-else-if="tt[i][j].status == 'finished'">
+                    <div v-if="tt_slots[i][j] && ['scheduled', 'finished'].includes(tt_slots[i][j].status)">
+                        <img :src="tt_slots[i][j].patient_sex == 'male' ? images.male_patient : images.female_patient"
+                             height="35" :title="tt_slots[i][j].patient_name"
+                             v-if="tt_slots[i][j].status == 'scheduled'">
+                        <img
+                            :src="tt_slots[i][j].patient_sex == 'male' ? images.finished_male_patient : images.finished_female_patient"
+                            height="35" :title="tt_slots[i][j].patient_name + ' (завершен)'"
+                            v-else-if="tt_slots[i][j].status == 'finished'">
+                    </div>
                     <input type="checkbox" :disabled="expired(`${day.date} ${time}`)"
                            @change="change_tt(tt[i][j], day, time)" v-model="tt[i][j]" v-else/>
                 </td>
@@ -53,7 +58,8 @@ export default {
             errors: [],
             days: [],
             slots: [],
-            tt: []
+            tt: [],
+            tt_slots: []
         }
     },
     methods: {
@@ -61,7 +67,8 @@ export default {
             this.loaded = false
             this.tt = []
             for (let i = 0; i < 7; i++) {
-                this.tt.push(Array(28).fill(false))
+                this.tt.push(Array(2 * 15 + 1).fill(false))
+                this.tt_slots.push(Array(2 * 15 + 1).fill(undefined))
             }
 
 
@@ -84,13 +91,9 @@ export default {
                     let time = moment.unix(slot.timestamp)
                     let i = this.days.findIndex(d => d.date == time.format('DD.MM.YYYY'))
                     let j = this.time_slots.findIndex(t => t == time.format('HH:mm'))
-                    this.tt[i][j] = slot.status == 'scheduled' ||  slot.status == 'finished' ? slot : (slot.status == 'available')
-                    if (slot.status == 'scheduled') {
-                        console.log(this.tt[i][j])
-                        console.log(slot)
-                    }
+                    this.tt[i][j] = slot.status != 'unavailable'
+                    this.tt_slots[i][j] = slot
                 })
-                console.log(this.tt)
                 this.$forceUpdate()
             })
             this.loaded = true
@@ -120,9 +123,9 @@ export default {
         },
         time_slots: function () {
             let slots = []
-            let time = moment('08:00', 'HH:mm')
+            let time = moment('07:00', 'HH:mm')
 
-            while (slots.length < 28) {
+            while (slots.length < 2 * 15 + 1) {
                 slots.push(time.format('HH:mm'))
                 time = time.add(30, 'minutes')
             }
