@@ -93,6 +93,7 @@ export default {
                     let j = this.time_slots.findIndex(t => t == time.format('HH:mm'))
                     this.tt[i][j] = slot.status != 'unavailable'
                     this.tt_slots[i][j] = slot
+                    console.log(i, j, slot)
                 })
                 console.log(this.tt_slots)
                 console.log(this.tt)
