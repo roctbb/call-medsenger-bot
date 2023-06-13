@@ -67,8 +67,8 @@ export default {
             this.loaded = false
             this.tt = []
             for (let i = 0; i < 7; i++) {
-                this.tt.push(Array(2 * 15 + 1).fill(false))
-                this.tt_slots.push(Array(2 * 15 + 1).fill(undefined))
+                this.tt.push(Array(2 * 16 + 1).fill(false))
+                this.tt_slots.push(Array(2 * 16 + 1).fill(undefined))
             }
 
 
@@ -125,7 +125,7 @@ export default {
             let slots = []
             let time = moment('07:00', 'HH:mm')
 
-            while (slots.length < 2 * 15 + 1) {
+            while (slots.length < 2 * 16 + 1) {
                 slots.push(time.format('HH:mm'))
                 time = time.add(30, 'minutes')
             }
