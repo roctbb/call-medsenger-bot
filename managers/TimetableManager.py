@@ -1,7 +1,8 @@
 from helpers import log
+from sqlalchemy import and_
 from managers.Manager import Manager
 from models import TimeSlot
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 class TimetableManager(Manager):
@@ -13,7 +14,8 @@ class TimetableManager(Manager):
         if timeslot_id:
             timeslot = TimeSlot.query.filter_by(id=timeslot_id).first()
         else:
-            timeslot = TimeSlot.query.filter_by(date=datetime.fromtimestamp(timeslot_info['timestamp']), doctor_id=timeslot_info['doctor_id']).first()
+            timeslot = TimeSlot.query.filter_by(date=datetime.fromtimestamp(timeslot_info['timestamp']),
+                                                doctor_id=timeslot_info['doctor_id']).first()
         is_new = False
         if not timeslot:
             if timeslot_info['status'] == 'unavailable':
@@ -70,13 +72,23 @@ class TimetableManager(Manager):
         return timeslots
 
     def get_doctor_timetable(self, doctor_id):
-        timeslots = TimeSlot.query.filter_by(doctor_id=doctor_id).all()
-        start_of_day = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-        timeslots = [timeslot.as_dict() for timeslot in timeslots if timeslot.date >= start_of_day]
+        timeslots = TimeSlot.query.filter(TimeSlot.doctor_id == doctor_id,
+                                          TimeSlot.date >= datetime.now(),
+                                          TimeSlot.status == 'available').all()
+        timeslots = [timeslot.as_dict() for timeslot in timeslots]
+        return timeslots
+
+    def get_doctor_week_timetable(self, doctor_id, date):
+        start = datetime.fromtimestamp(date)
+        end = datetime.fromtimestamp(date) + timedelta(days=7)
+        timeslots = TimeSlot.query.filter(TimeSlot.doctor_id == doctor_id,
+                                          TimeSlot.date >= start, TimeSlot.date <= end).all()
+        timeslots = [timeslot.as_dict() for timeslot in timeslots]
         for timeslot in timeslots:
             if timeslot['contract_id']:
                 info = self.medsenger_api.get_patient_info(timeslot['contract_id'])
-                timeslot['patient_name'] = info['name']
+                name_parts = info['name'].split(' ')
+                timeslot['patient_name'] = '{} {}. {}.'.format(name_parts[0], name_parts[1][0], name_parts[2][0])
                 timeslot['patient_sex'] = info['sex']
         return timeslots
 

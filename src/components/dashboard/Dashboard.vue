@@ -10,13 +10,6 @@
         </div>
 
         <div style="margin-top: 10px" v-if="state == 'timetable'">
-            Пожалуйста, отметьте удобное для Вас время.
-            <div class="row" style="margin-left: 0">
-                <button class="btn btn-primary" @click="save()">Сохранить
-                </button>
-                <button class="btn btn-primary" @click="send()">Отправить пациенту
-                </button>
-            </div>
             <timetable :patient="patient"/>
         </div>
         <div style="margin-top: 10px" v-if="state == 'calls'">
@@ -53,28 +46,7 @@ export default {
         },
         change_state: function (state) {
             this.state = state
-        },
-        save: function () {
-            Event.fire('save-doctor-slots')
-        },
-        send: function () {
-            this.$confirm(
-                {
-                    message: `Сохранить и отправить расписание?`,
-                    button: {
-                        no: 'Нет',
-                        yes: 'Да'
-                    },
-                    callback: confirm => {
-                        if (confirm) {
-                            this.save()
-                            this.axios.post(this.url('/send_appointment')).then(Event.fire('action-done'));
-                        }
-                    }
-                }
-            )
-        }
-    },
+        },},
     computed: {},
     mounted() {
         Event.listen('dashboard-to-main', () => {
@@ -113,6 +85,5 @@ small {
 .card a {
     font-size: 90% !important;
 }
-
 
 </style>

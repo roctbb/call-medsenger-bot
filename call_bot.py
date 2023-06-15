@@ -171,6 +171,17 @@ def get_doctor_tt(args, form):
     return jsonify(timetable)
 
 
+@app.route('/api/settings/get_doctor_timetable/<int:start>', methods=['GET'])
+@verify_args
+def get_doctor_week_tt(args, form, start):
+    contract_id = args.get('contract_id')
+    patient = medsenger_api.get_patient_info(contract_id)
+
+    timetable = timetable_manager.get_doctor_week_timetable(patient['doctor_id'], start)
+
+    return jsonify(timetable)
+
+
 @app.route('/api/settings/get_patient_timetable', methods=['GET'])
 @verify_args
 def get_patient_tt(args, form):

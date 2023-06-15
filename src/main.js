@@ -1,7 +1,10 @@
 import Vue from 'vue'
 import App from './App'
 
-import VueConfirmDialog from 'vue-confirm-dialog'
+import VueConfirmDialog from 'vue-confirm-dialog';
+import DatePicker from 'vue2-datepicker';
+import 'vue2-datepicker/index.css';
+import 'vue2-datepicker/locale/ru';
 
 import axios from "axios";
 
@@ -83,6 +86,7 @@ Vue.mixin({
 
 Vue.use(VueConfirmDialog)
 Vue.component('vue-confirm-dialog', VueConfirmDialog.default)
+Vue.component('date-picker', DatePicker)
 
 new Vue({
     el: '#app',
