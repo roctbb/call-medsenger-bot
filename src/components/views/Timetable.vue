@@ -27,7 +27,6 @@
         </div>
 
         <loading v-if="!days.length"/>
-        <error-block :errors="errors"/>
         <table class="table-bordered fixed-columns" style="font-size: smaller;">
             <colgroup>
                 <col span="1" style="width: 25px;">
@@ -53,8 +52,8 @@
                            @change="change_tt(tt[i][j], day, time)" v-model="tt[i][j]" v-else/>
                 </td>
             </tr>
-
         </table>
+        <error-block :errors="errors"/>
     </div>
 </template>
 
@@ -188,7 +187,7 @@ export default {
             let color = 'transparent'
             if (timeslot && timeslot.status == 'available') color = '#e9f6f7'
             if (timeslot && ['scheduled', 'finished'].includes(timeslot.status)) color = '#d1edef'
-            if (this.expired(dt))  color = '#f8f8f8'
+            if (this.expired(dt)) color = '#f8f8f8'
             return 'background-color: ' + color
         }
     },
