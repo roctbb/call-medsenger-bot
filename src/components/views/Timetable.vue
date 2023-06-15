@@ -104,6 +104,7 @@ export default {
         load_timetable: function () {
             this.loaded = false
             this.tt = []
+            this.tt_slots = []
             for (let i = 0; i < 7; i++) {
                 this.tt.push(Array(2 * 16 + 1).fill(false))
                 this.tt_slots.push(Array(2 * 16 + 1).fill(undefined))
