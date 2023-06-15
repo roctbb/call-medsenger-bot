@@ -128,7 +128,7 @@ def order(data):
         medsenger_api.send_message(contract_id, 'Вам необходимо запланировать онлайн-встречу с врачом. ' +
                                    'Для этого воспользуйтесь кнопкой:',
                                    action_name='Выбрать время', action_link='appointment', action_big=False,
-                                   only_patient=True, action_onetime=True)
+                                   only_patient=True)
         medsenger_api.send_message(contract_id, 'Пациенту отправлена ссылка на выбор времени консультации.', only_doctor=True)
         return 'ok'
 
