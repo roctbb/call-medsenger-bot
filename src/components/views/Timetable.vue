@@ -26,6 +26,7 @@
             <button class="btn btn-sm btn-primary" @click="send()">Отправить пациенту</button>
         </div>
 
+        <error-block :errors="errors"/>
         <loading v-if="!days.length"/>
         <table class="table-bordered fixed-columns" style="font-size: smaller;">
             <colgroup>
@@ -53,7 +54,6 @@
                 </td>
             </tr>
         </table>
-        <error-block :errors="errors"/>
     </div>
 </template>
 
