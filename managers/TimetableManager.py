@@ -73,8 +73,7 @@ class TimetableManager(Manager):
 
     def get_doctor_timetable(self, doctor_id):
         timeslots = TimeSlot.query.filter(TimeSlot.doctor_id == doctor_id,
-                                          TimeSlot.date >= datetime.now(),
-                                          TimeSlot.status == 'scheduled').all()
+                                          TimeSlot.date >= datetime.now()).all()
         timeslots = [timeslot.as_dict() for timeslot in timeslots]
         for timeslot in timeslots:
             if timeslot['contract_id']:
