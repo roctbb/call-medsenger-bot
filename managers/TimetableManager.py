@@ -74,8 +74,18 @@ class TimetableManager(Manager):
     def get_doctor_timetable(self, doctor_id):
         timeslots = TimeSlot.query.filter(TimeSlot.doctor_id == doctor_id,
                                           TimeSlot.date >= datetime.now(),
-                                          TimeSlot.status == 'available').all()
+                                          TimeSlot.status == 'scheduled').all()
         timeslots = [timeslot.as_dict() for timeslot in timeslots]
+        for timeslot in timeslots:
+            if timeslot['contract_id']:
+                info = self.medsenger_api.get_patient_info(timeslot['contract_id'])
+                name_parts = info['name'].split(' ')
+                timeslot['patient_name'] = name_parts[0]
+                if len(name_parts) > 1:
+                    timeslot['patient_name'] += ' {}.'.format(name_parts[1][0])
+                if len(name_parts) > 2:
+                    timeslot['patient_name'] += ' {}.'.format(name_parts[2][0])
+                timeslot['patient_sex'] = info['sex']
         return timeslots
 
     def get_doctor_week_timetable(self, doctor_id, date):
