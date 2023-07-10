@@ -46,7 +46,8 @@ export default {
         },
         change_state: function (state) {
             this.state = state
-        },},
+        },
+    },
     computed: {},
     mounted() {
         Event.listen('dashboard-to-main', () => {

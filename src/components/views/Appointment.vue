@@ -1,6 +1,8 @@
 <template>
     <div>
-        Пожалуйста, выберите удобное для звонка время. После этого необходимо подтвердить свой выбор:
+        Пожалуйста, выберите удобное для звонка время. После этого необходимо подтвердить свой выбор.
+                <br>
+                <span class="text-muted">* Время указано в Вашем часовом поясе</span>
         <br>
         <button class="btn btn-success" style="margin-top: 10px" :disabled="!chosen_slot" @click="save()">Выбрать
             <span v-if="chosen_slot">{{ chosen_slot.date }}, {{ chosen_slot.time }}</span>
@@ -40,6 +42,7 @@ export default {
     methods: {
         load_timetable: function () {
             this.axios.get(this.url('/api/settings/get_doctor_timetable')).then((response) => {
+                if (!response.data.length) this.errors = ['К сожалению, у врача нет доступных для записи слотов.']
                 let slots = response.data
                     .filter(slot => slot.status == 'available' && slot.timestamp > moment().unix())
                     .sort((a, b) => a.timestamp - b.timestamp)

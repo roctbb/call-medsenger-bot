@@ -1,4 +1,6 @@
 from flask import jsonify
+from datetime import timedelta
+
 from managers.ContractsManager import ContractManager
 from managers.TimetableManager import TimetableManager
 from managers.CallManager import CallManager
@@ -227,12 +229,16 @@ def save_appointment(args, form):
     slot = request.json
     timetable_manager.add(slot)
 
+    patient_info = medsenger_api.get_patient_info(contract_id)
+    patient_datetime = datetime.utcfromtimestamp(slot['timestamp']) - timedelta(minutes=patient_info.get('timezone_offset', -180))
+    doctor_datetime = datetime.utcfromtimestamp(slot['timestamp']) - timedelta(minutes=patient_info.get('doctor_timezone_offset', -180))
+
     medsenger_api.send_message(contract_id,
-                               'Онлайн-встреча с врачом запланирована на {} в {}. '.format(slot['date'], slot['time']) +
+                               'Онлайн-встреча с врачом запланирована на {} по Вашему часовому поясу. '.format(patient_datetime.strftime('%d.%m в %H:%M')) +
                                'За 10 минут до назначенного времени Вам придет сообщение с информацией для подключения.',
                                only_patient=True)
     medsenger_api.send_message(contract_id,
-                               'Пациент запланировал онлайн-встречу на {} в {}. '.format(slot['date'], slot['time']) +
+                               'Пациент запланировал онлайн-встречу на {} по Вашему часовому поясу. '.format(doctor_datetime.strftime('%d.%m в %H:%M')) +
                                'За 10 минут до назначенного времени Вам придет сообщение с информацией для подключения.',
                                only_doctor=True)
 
@@ -270,7 +276,7 @@ def start_call(args, form):
 def cancel_call(args, form):
     contract_id = request.json.get('contract_id')
     timeslot = request.json
-    print(timeslot)
+
     timetable_manager.cancel(timeslot['id'])
 
     medsenger_api.send_message(contract_id,

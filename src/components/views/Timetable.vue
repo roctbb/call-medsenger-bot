@@ -4,6 +4,8 @@
              style="margin: 5px 0" v-if="!mobile">
             <div class="col" style="padding: 0">
                 Пожалуйста, отметьте удобное для Вас время
+                <br>
+                <span class="text-muted">* Время указано в Вашем часовом поясе</span>
             </div>
             <div>
                 <date-picker type="week" value-type="timestamp" style="width: 230px"
@@ -60,7 +62,6 @@
 <script>
 import * as moment from "moment/moment";
 import Loading from "../Loading";
-import axios from "axios";
 import ErrorBlock from "../parts/ErrorBlock";
 
 export default {
