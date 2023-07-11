@@ -173,13 +173,13 @@ def get_doctor_tt(args, form):
     return jsonify(timetable)
 
 
-@app.route('/api/settings/get_doctor_timetable/<int:start>', methods=['GET'])
+@app.route('/api/settings/get_doctor_timetable/<int:start>/<int:days>', methods=['GET'])
 @verify_args
-def get_doctor_week_tt(args, form, start):
+def get_doctor_week_tt(args, form, start, days):
     contract_id = args.get('contract_id')
     patient = medsenger_api.get_patient_info(contract_id)
 
-    timetable = timetable_manager.get_doctor_week_timetable(patient['doctor_id'], start)
+    timetable = timetable_manager.get_doctor_period_timetable(patient['doctor_id'], start, days)
 
     return jsonify(timetable)
 
@@ -238,7 +238,7 @@ def save_appointment(args, form):
                                'За 10 минут до назначенного времени Вам придет сообщение с информацией для подключения.',
                                only_patient=True)
     medsenger_api.send_message(contract_id,
-                               'Пациент запланировал онлайн-встречу на {} по Вашему часовому поясу. '.format(doctor_datetime.strftime('%d.%m в %H:%M')) +
+                               'Онлайн-встреча с пациентом запланирована на {} по Вашему часовому поясу. '.format(doctor_datetime.strftime('%d.%m в %H:%M')) +
                                'За 10 минут до назначенного времени Вам придет сообщение с информацией для подключения.',
                                only_doctor=True)
 
@@ -280,10 +280,10 @@ def cancel_call(args, form):
     timetable_manager.cancel(timeslot['id'])
 
     medsenger_api.send_message(contract_id,
-                               'Онлайн-встреча с врачом  ({}) отменена.'.format(timeslot['time']),
+                               'Онлайн-встреча с врачом ({}) отменена.'.format(timeslot['time']),
                                only_patient=True)
     medsenger_api.send_message(contract_id,
-                               'Онлайн-встреча с пациентом  ({}) отменена.'.format(timeslot['time']),
+                               'Онлайн-встреча с пациентом ({}) отменена.'.format(timeslot['time']),
                                only_doctor=True)
 
     return 'ok'

@@ -2,13 +2,15 @@
     <div>
         <loading v-if="!loaded"/>
         <div v-else>
+            <error-block :errors="errors"/>
             <div class="text-center" v-if="!slots.length">
                 <img :src="images.nothing_found"/>
                 <h5>Нет запланированных звонков</h5>
             </div>
             <div v-else>
                 <div class="row">
-                    <card :class="mobile ? 'col-12' : 'col-4'" style="grid-column-gap: 0" v-for="slot in slots" :key="slot.id"
+                    <card :class="mobile ? 'col-12' : 'col-4'" style="grid-column-gap: 0" v-for="slot in slots"
+                          :key="slot.id"
                           :title="slot.time" :image="images.start_video_call">
                         <div v-if="source == 'doctor'">
                             <strong>Пациент:</strong> {{ slot.patient_name }} <br><br>
@@ -29,27 +31,30 @@
 import Loading from "../Loading";
 import * as moment from "moment/moment";
 import Card from "../parts/Card";
+import ErrorBlock from "../parts/ErrorBlock";
 
 export default {
     name: "CallsList",
-    components: {Card, Loading},
+    components: {ErrorBlock, Card, Loading},
     props: ['source'],
     data() {
         return {
             loaded: false,
-            slots: []
+            slots: [],
+            errors: []
         }
     },
     methods: {
         load: function () {
             this.loaded = false
             this.axios.get(this.url(`/api/settings/get_${this.source}_timetable`)).then((response) => {
-                this.slots = response.data.filter(slot => slot.status == 'scheduled' && slot.timestamp >= moment().unix())
+                this.slots = response.data
+                    .filter(slot => slot.status == 'scheduled' && slot.timestamp >= moment().unix())
+                    .sort((a, b) => a.timestamp - b.timestamp)
                 this.slots.forEach(slot => {
                     slot.time = moment.unix(slot.timestamp).format('DD.MM в HH:mm')
                 })
             })
-            this.slots.sort((a, b) => a.timestamp - b.timestamp)
             this.$forceUpdate()
             this.loaded = true
         },
@@ -85,7 +90,9 @@ export default {
                     callback: confirm => {
                         if (confirm) {
                             this.axios.post(this.url('cancel_call'), slot).then(response => {
-                                Event.fire('action-done')
+                                slot.status = 'available'
+                                this.slots = this.slots.filter(s => s.status == 'scheduled')
+                                this.errors = [`Онлайн-встреча с пациентом ${slot.patient_name} на ${slot.time} успешно отменена! (${moment().format('HH:mm')})`]
                             })
                         }
                     }
