@@ -48,7 +48,7 @@
             </tr>
 
             <tr v-for="(time, j) in time_slots">
-                <td class="align-middle font-weight-bold table-info" colspan="1">{{ time }}</td>
+                <td class="align-middle font-weight-bold table-info text-center" colspan="1">{{ time }}</td>
                 <td colspan="1" v-for="(day, i) in days"
                     :style="cell_bg(`${day.date} ${time}`, tt_slots[i][j], tt[i][j])">
                     <div class="row" style="margin: 0">
@@ -211,7 +211,8 @@ export default {
                             if (name_parts.length > 1) slot.patient_name += ` ${name_parts[1][0]}.`
                             if (name_parts.length > 2) slot.patient_name += ` ${name_parts[2][0]}.`
 
-                            this.axios.post(this.url('/save_appointment'), slot).then(() => {
+                            this.axios.post(this.url('/save_appointment'), slot).then((response) => {
+                                slot.id = response.data.id
                                 this.tt_slots[i][j] = slot
                                 this.msg = `${this.call_description(this.tt_slots[i][j])} успешно запланирована!`
 

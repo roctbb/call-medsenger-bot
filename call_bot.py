@@ -227,7 +227,7 @@ def send_appointment(args, form):
 def save_appointment(args, form):
     contract_id = args.get('contract_id')
     slot = request.json
-    timetable_manager.add(slot)
+    timeslot, is_new = timetable_manager.add(slot)
 
     patient_info = medsenger_api.get_patient_info(contract_id)
     patient_datetime = datetime.utcfromtimestamp(slot['timestamp']) - timedelta(minutes=patient_info.get('timezone_offset', -180))
@@ -242,7 +242,7 @@ def save_appointment(args, form):
                                'За 10 минут до назначенного времени Вам придет сообщение с информацией для подключения.',
                                only_doctor=True)
 
-    return 'ok'
+    return jsonify(timeslot.as_dict())
 
 
 @app.route('/check/<call_id>', methods=['GET'])
