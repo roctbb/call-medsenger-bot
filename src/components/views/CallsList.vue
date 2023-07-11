@@ -3,6 +3,8 @@
         <loading v-if="!loaded"/>
         <div v-else>
             <error-block :errors="errors"/>
+            <success-message :message="msg"/>
+
             <div class="text-center" v-if="!slots.length">
                 <img :src="images.nothing_found"/>
                 <h5>Нет запланированных звонков</h5>
@@ -32,16 +34,18 @@ import Loading from "../Loading";
 import * as moment from "moment/moment";
 import Card from "../parts/Card";
 import ErrorBlock from "../parts/ErrorBlock";
+import SuccessMessage from "../parts/SuccessMessage";
 
 export default {
     name: "CallsList",
-    components: {ErrorBlock, Card, Loading},
+    components: {SuccessMessage, ErrorBlock, Card, Loading},
     props: ['source'],
     data() {
         return {
             loaded: false,
             slots: [],
-            errors: []
+            errors: [],
+            msg: undefined
         }
     },
     methods: {
@@ -92,7 +96,7 @@ export default {
                             this.axios.post(this.url('cancel_call'), slot).then(response => {
                                 slot.status = 'available'
                                 this.slots = this.slots.filter(s => s.status == 'scheduled')
-                                this.errors = [`Онлайн-встреча с пациентом ${slot.patient_name} на ${slot.time} успешно отменена! (${moment().format('HH:mm')})`]
+                                this.msg = `Онлайн-встреча с пациентом ${slot.patient_name} на ${slot.time} успешно отменена!`
                             })
                         }
                     }

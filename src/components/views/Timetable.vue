@@ -31,10 +31,12 @@
         </div>
 
         <error-block :errors="errors"/>
+        <success-message :message="msg" v-if="msg"/>
+
         <loading v-if="!days.length"/>
         <table class="table-bordered fixed-columns" style="font-size: smaller;">
             <colgroup>
-                <col span="1" style="width: 25px;">
+                <col span="1" :style="`width: ${mobile ? 100 : 25}px;`">
                 <col span="1" :style="col_width" v-for="i in cols_count">
             </colgroup>
 
@@ -83,10 +85,11 @@
 import * as moment from "moment/moment";
 import Loading from "../Loading";
 import ErrorBlock from "../parts/ErrorBlock";
+import SuccessMessage from "../parts/SuccessMessage";
 
 export default {
     name: "Timetable",
-    components: {ErrorBlock, Loading},
+    components: {SuccessMessage, ErrorBlock, Loading},
     props: {
         patient: {
             required: true
@@ -97,6 +100,7 @@ export default {
             state: 'timetable',
             loaded: false,
             errors: [],
+            msg: undefined,
             days: [],
             slots: [],
             tt: [],
@@ -185,6 +189,8 @@ export default {
                     },
                     callback: confirm => {
                         if (confirm) {
+                            this.msg = undefined
+
                             let timestamp = moment(`${day.date} ${time}`, 'DD.MM.YYYY HH:mm').unix()
                             let slot = this.slots.filter(s => s.timestamp == timestamp)[0]
 
@@ -207,7 +213,8 @@ export default {
 
                             this.axios.post(this.url('/save_appointment'), slot).then(() => {
                                 this.tt_slots[i][j] = slot
-                                this.errors = [`Онлайн-встреча с пациентом ${this.tt_slots[i][j].patient_name} на ${this.tt_slots[i][j].time} успешно запланирована! (${moment().format('HH:mm')})`]
+                                this.msg = `${this.call_description(this.tt_slots[i][j])} успешно запланирована!`
+
                                 this.$forceUpdate()
                             });
                         }
@@ -226,12 +233,15 @@ export default {
                     callback: confirm => {
                         if (confirm) {
                             this.axios.post(this.url('cancel_call'), this.tt_slots[i][j]).then(response => {
+                                this.msg = undefined
+                                this.msg = `${this.call_description(this.tt_slots[i][j])} успешно отменена!`
+
                                 this.tt_slots[i][j].status = 'available'
-                                this.errors = [`Онлайн-встреча с пациентом ${this.tt_slots[i][j].patient_name} на ${this.tt_slots[i][j].time} успешно отменена! (${moment().format('HH:mm')})`]
                                 this.tt_slots[i][j].patient_name = undefined
                                 this.tt_slots[i][j].patient_id = undefined
                                 this.tt_slots[i][j].contract_id = undefined
                                 this.tt[i][j] = true
+
                                 this.$forceUpdate()
                             })
                         }
@@ -249,9 +259,8 @@ export default {
             this.axios.post(this.url('/api/settings/save_doctor_timetable'), {
                 slots: this.slots
             }).then(response => {
-                this.errors = [`Расписание сохранено! (${moment().format('HH:mm')})`]
+                this.msg = `Расписание успешно сохранено ${sent ? 'и отправлено пациенту' : ''}!`
                 this.slots = response.data
-                if (sent) this.errors.push(`Расписание отправлено пациенту! (${moment().format('HH:mm')})`)
             });
         },
         send: function () {
@@ -280,6 +289,9 @@ export default {
             if (timeslot && ['scheduled', 'finished'].includes(timeslot.status)) color = '#d1edef'
             if (this.expired(dt)) color = '#f8f8f8'
             return 'background-color: ' + color
+        },
+        call_description: function (slot) {
+            return `Онлайн-встреча с пациентом <b>${slot.patient_name} на ${slot.time}</b>`
         }
     },
     computed: {
@@ -295,7 +307,7 @@ export default {
             return slots
         },
         col_width: function () {
-            let w = Math.floor((window.innerWidth * 0.9 - 25) / this.cols_count)
+            let w = Math.floor((window.innerWidth * 0.9 - (this.mobile ? 100 : 25)) / this.cols_count)
             return 'width: ' + w + 'px;'
         },
         cols_count: function () {
