@@ -1,4 +1,6 @@
 import json
+import traceback
+
 import jwt
 from jose import jws
 import os
@@ -45,6 +47,7 @@ def verify_args(func):
         try:
             return func(request.args, request.form, *args, **kwargs)
         except Exception as e:
+            print(traceback.format_exc())
             log(e, True)
             abort(500)
 
