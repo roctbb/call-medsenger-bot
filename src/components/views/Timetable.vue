@@ -14,7 +14,10 @@
             </div>
             <button class="btn btn-sm btn-primary" @click="save()">Сохранить</button>
             <button class="btn btn-sm btn-primary" @click="send()">Отправить пациенту</button>
-            <button class="btn btn-sm btn-primary" @click="change_show_mode()">{{ show_tt ? 'Закрыть' : 'Открыть' }} расписание</button>
+            <button class="btn btn-sm btn-primary" @click="change_show_mode()" :disabled="flags.btn_lock">
+                {{ flags.show_tt ? 'Закрыть' : 'Открыть' }}
+                расписание
+            </button>
         </div>
         <div style="margin: 5px 0" v-else>
             <div style="padding: 0">
@@ -30,7 +33,11 @@
             <button class="btn btn-sm btn-primary" @click="save()">Сохранить</button>
             <button class="btn btn-sm btn-primary" @click="send()">Отправить пациенту</button>
             <br>
-            <button class="btn btn-sm btn-primary" @click="change_show_mode()">{{ show_tt ? 'Закрыть' : 'Открыть' }} расписание</button>
+            <button class="btn btn-sm btn-primary" @click="change_show_mode()"
+                    style="margin-top: 2px"
+                    :disabled="flags.btn_lock">{{ flags.show_tt ? 'Закрыть' : 'Открыть' }}
+                расписание
+            </button>
         </div>
 
         <error-block :errors="errors"/>
@@ -102,14 +109,17 @@ export default {
     data: function () {
         return {
             state: 'timetable',
-            loaded: false,
+            flags: {
+                loaded: false,
+                show_tt: window.PARAMS.show_tt,
+                btn_lock: false
+            },
             errors: [],
             msg: undefined,
             days: [],
             slots: [],
             tt: [],
             tt_slots: [],
-            show_tt: window.PARAMS.show_tt,
             date: undefined,
             formatter: {
                 //[optional] Date to String
@@ -131,7 +141,7 @@ export default {
     },
     methods: {
         load_timetable: function () {
-            this.loaded = false
+            this.flags.loaded = false
             this.tt = []
             this.tt_slots = []
             for (let i = 0; i < this.cols_count; i++) {
@@ -168,7 +178,7 @@ export default {
                         this.tt_slots[i][j] = slot
                     })
                     this.$forceUpdate()
-                    this.loaded = true
+                    this.flags.loaded = true
                 })
         },
         change_tt: function (mode, date, time) {
@@ -232,43 +242,56 @@ export default {
         },
         cancel_call: function (day, time, i, j) {
             this.$confirm({
-                    message: `Отменить запись пациента ${this.tt_slots[i][j].patient_name} на ${day.date} в ${time}?`,
-                    button: {
-                        no: 'Нет',
-                        yes: 'Да'
-                    },
-                    callback: confirm => {
-                        if (confirm) {
-                            this.axios.post(this.url('cancel_call'), this.tt_slots[i][j]).then(response => {
-                                this.msg = undefined
-                                this.msg = `${this.call_description(this.tt_slots[i][j])} успешно отменена!`
+                message: `Отменить запись пациента ${this.tt_slots[i][j].patient_name} на ${day.date} в ${time}?`,
+                button: {
+                    no: 'Нет',
+                    yes: 'Да'
+                },
+                callback: confirm => {
+                    if (confirm) {
+                        this.axios.post(this.url('cancel_call'), this.tt_slots[i][j]).then(response => {
+                            this.msg = undefined
+                            this.msg = `${this.call_description(this.tt_slots[i][j])} успешно отменена!`
 
-                                this.tt_slots[i][j].status = 'available'
-                                this.tt_slots[i][j].patient_name = undefined
-                                this.tt_slots[i][j].patient_id = undefined
-                                this.tt_slots[i][j].contract_id = undefined
-                                this.tt[i][j] = true
+                            this.tt_slots[i][j].status = 'available'
+                            this.tt_slots[i][j].patient_name = undefined
+                            this.tt_slots[i][j].patient_id = undefined
+                            this.tt_slots[i][j].contract_id = undefined
+                            this.tt[i][j] = true
 
-                                this.$forceUpdate()
+                            this.$forceUpdate()
+                        })
+                    }
+                }
+            })
+        },
+        change_show_mode: function () {
+            this.$confirm({
+                message: `${this.flags.show_tt ? 'Закрыть' : 'Открыть'} самостоятельную запись для пациента ${this.patient.name}?`,
+                button: {
+                    no: 'Нет',
+                    yes: 'Да'
+                },
+                callback: confirm => {
+                    if (confirm) {
+                        this.flags.btn_lock = true
+
+                        if (!this.flags.show_tt) {
+                            axios.post(this.url('/api/settings/show_tt_in_contract')).then((response) => {
+                                this.msg = 'Расписание открыто для пациента!'
+                                this.flags.show_tt = true
+                                this.flags.btn_lock = false
+                            })
+                        } else {
+                            axios.post(this.url('/api/settings/hide_tt_in_contract')).then((response) => {
+                                this.msg = 'Пациент больше не может записаться самостоятельно.'
+                                this.flags.show_tt = false
+                                this.flags.btn_lock = false
                             })
                         }
                     }
                 }
-            )
-
-        },
-        change_show_mode: function () {
-            if (!this.show_tt) {
-                axios.post(this.url('/api/settings/show_tt_in_contract')).then((response) => {
-                    this.msg = 'Расписание открыто для пациента!'
-                    this.show_tt = true
-                })
-            } else {
-                axios.post(this.url('/api/settings/hide_tt_in_contract')).then((response) => {
-                    this.msg = 'Пациент больше не может записаться самостоятельно.'
-                    this.show_tt = false
-                })
-            }
+            })
         },
 
         expired: function (time) {
