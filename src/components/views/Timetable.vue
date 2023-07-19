@@ -29,6 +29,7 @@
             </div>
             <button class="btn btn-sm btn-primary" @click="save()">Сохранить</button>
             <button class="btn btn-sm btn-primary" @click="send()">Отправить пациенту</button>
+            <br>
             <button class="btn btn-sm btn-primary" @click="change_show_mode()">{{ show_tt ? 'Закрыть' : 'Открыть' }} расписание</button>
         </div>
 
