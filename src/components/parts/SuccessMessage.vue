@@ -1,6 +1,6 @@
 <template>
     <div class="alert alert-success" role="alert" v-if="message">
-        <span v-html="message"/> <i>({{time}})</i>
+        <span v-html="message"/>
     </div>
 
 </template>
