@@ -14,9 +14,7 @@
             </div>
             <button class="btn btn-sm btn-primary" @click="save()">Сохранить</button>
             <button class="btn btn-sm btn-primary" @click="send()">Отправить пациенту</button>
-            <button class="btn btn-sm btn-primary" @click="change_show_mode()">{{ show_tt ? 'Закрыть' : 'Открыть' }}
-                расписание
-            </button>
+            <button class="btn btn-sm btn-primary" @click="change_show_mode()">{{ show_tt ? 'Закрыть' : 'Открыть' }} расписание</button>
         </div>
         <div style="margin: 5px 0" v-else>
             <div style="padding: 0">
@@ -31,6 +29,7 @@
             </div>
             <button class="btn btn-sm btn-primary" @click="save()">Сохранить</button>
             <button class="btn btn-sm btn-primary" @click="send()">Отправить пациенту</button>
+            <button class="btn btn-sm btn-primary" @click="change_show_mode()">{{ show_tt ? 'Закрыть' : 'Открыть' }} расписание</button>
         </div>
 
         <error-block :errors="errors"/>
