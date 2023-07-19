@@ -14,6 +14,7 @@
             </div>
             <button class="btn btn-sm btn-primary" @click="save()">Сохранить</button>
             <button class="btn btn-sm btn-primary" @click="send()">Отправить пациенту</button>
+            <button class="btn btn-sm btn-primary" @click="change_show_mode()">{{show_tt ? 'Закрыть' : 'Открыть'}} расписание</button>
         </div>
         <div style="margin: 5px 0" v-else>
             <div style="padding: 0">
@@ -86,6 +87,7 @@ import * as moment from "moment/moment";
 import Loading from "../Loading";
 import ErrorBlock from "../parts/ErrorBlock";
 import SuccessMessage from "../parts/SuccessMessage";
+import axios from "axios";
 
 export default {
     name: "Timetable",
@@ -105,6 +107,7 @@ export default {
             slots: [],
             tt: [],
             tt_slots: [],
+            show_tt: window.PARAMS.show_tt,
             date: undefined,
             formatter: {
                 //[optional] Date to String
@@ -167,6 +170,7 @@ export default {
                 })
         },
         change_tt: function (mode, date, time) {
+            this.msg = undefined
             let timestamp = moment(`${date.date} ${time}`, 'DD.MM.YYYY HH:mm').unix()
             let slot = this.slots.filter(s => s.timestamp == timestamp)[0]
 
@@ -250,6 +254,19 @@ export default {
                 }
             )
 
+        },
+        change_show_mode: function () {
+            this.show_tt = !this.show_tt
+
+            if (this.show_tt) {
+                axios.post(this.url('/api/settings/show_tt_in_contract')).then((response) => {
+                    this.msg = 'Расписание открыто для пациента!'
+                })
+            } else {
+                axios.post(this.url('/api/settings/hide_tt_in_contract')).then((response) => {
+                    this.msg = 'Пациент больше не может записаться самостоятельно.'
+                })
+            }
         },
 
         expired: function (time) {

@@ -10,13 +10,15 @@ class Contract(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     agent_token = db.Column(db.String(255), nullable=True)
     engine = db.Column(db.String(255), nullable=True, server_default='zoom')
+    show_timetable = db.Column(db.Boolean, default=False)
 
     def as_dict(self, native=False):
         serialized = {
             "id": self.id,
             "clinic_id": self.id,
             "is_active": self.is_active,
-            "engine": self.engine
+            "engine": self.engine,
+            "show_timetable": self.show_timetable
         }
 
         if native:

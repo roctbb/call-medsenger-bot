@@ -63,6 +63,12 @@ class ContractManager(Manager):
 
         return patient_info
 
+    def change_show_tt_mode(self, contract_id, show_tt):
+        contract = Contract.query.filter_by(id=contract_id).first()
+        contract.show_timetable = show_tt
+        self.__commit__()
+        return 'ok'
+
     def get(self, contract_id):
         contract = Contract.query.filter_by(id=contract_id).first()
 

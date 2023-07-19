@@ -76,6 +76,18 @@ def remove(data):
     return "ok"
 
 
+@app.route('/actions', methods=['POST'])
+@verify_json
+def actions(data):
+    print("asked for actions")
+    contract = contract_manager.get(data.get('contract_id'))
+    actions = []
+    if contract.show_timetable:
+        actions = [{'link': 'appointment', 'type': 'patient', 'name': 'Записаться на прием'}]
+
+    return jsonify(actions)
+
+
 # settings and views
 @app.route('/settings', methods=['GET'])
 @verify_args
@@ -86,7 +98,7 @@ def get_settings(args, form):
         contract_manager.add(contract_id)
 
     contract = contract_manager.get(contract_id)
-    return get_ui(contract, 'settings')
+    return get_ui(contract, 'settings', params={"show_tt": contract.show_timetable})
 
 
 @app.route('/patient_timetable', methods=['GET'])
@@ -99,6 +111,7 @@ def get_patient_timetable(args, form):
 
     contract = contract_manager.get(contract_id)
     return get_ui(contract, 'calls')
+
 
 @app.route('/call', methods=['GET'])
 @verify_args
@@ -214,9 +227,31 @@ def save_doctor_tt(args, form):
     slots = []
     for slot in data['slots']:
         s, is_new = timetable_manager.add(slot)
-        slots.append(s.as_dict())
+        if s:
+            slots.append(s.as_dict())
 
     return jsonify(slots)
+
+
+@app.route('/api/settings/show_tt_in_contract', methods=['POST'])
+@verify_args
+def show_tt_in_contract(args, form):
+    contract_id = args.get('contract_id')
+    contract_manager.change_show_tt_mode(contract_id, True)
+
+    medsenger_api.update_cache(contract_id)
+
+    return 'ok'
+
+
+@app.route('/api/settings/hide_tt_in_contract', methods=['POST'])
+@verify_args
+def hide_tt_in_contract(args, form):
+    contract_id = args.get('contract_id')
+    contract_manager.change_show_tt_mode(contract_id, False)
+
+    medsenger_api.update_cache(contract_id)
+    return 'ok'
 
 
 @app.route('/send_appointment', methods=['POST'])
