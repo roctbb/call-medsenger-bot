@@ -133,11 +133,11 @@ class CallManager(Manager):
 
             self.medsenger_api.send_message(contract_id, 'Видеозвонок c пациентом.', action_link=doctor_link,
                                             action_type='url', action_name='Подключиться',
-                                            only_doctor=True, action_deadline=int(time.time() + 60 * 40))
+                                            only_doctor=True, action_deadline=int(time.time() + 60 * 60))
 
             self.medsenger_api.send_message(contract_id, 'Видеозвонок от врача.', action_link=patient_link,
                                             action_type='url', action_name='Подключиться',
-                                            only_patient=True, action_deadline=int(time.time() + 60 * 40))
+                                            only_patient=True, action_deadline=int(time.time() + 60 * 60))
 
             if timeslot_id:
                 timeslot = TimeSlot.query.filter_by(id=timeslot_id).first()
@@ -175,7 +175,7 @@ class CallManager(Manager):
 
     def check_rooms(self, app):
         with app.app_context():
-            notification_time = datetime.now() - timedelta(minutes=45)
+            notification_time = datetime.now() - timedelta(minutes=60)
             room_ids = [room.as_dict()['id'] for room in Room.query.filter(Room.created >= notification_time,
                                                                            Room.had_connection.is_(False)).all()]
             for room_id in room_ids:
