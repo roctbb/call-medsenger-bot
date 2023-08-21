@@ -158,6 +158,7 @@ def order(data):
         return 'ok'
     if data['order'] == 'show_timetable':
         contract_manager.change_show_tt_mode(contract_id, True)
+        medsenger_api.update_cache(contract_id)
         return 'ok'
 
     return 'not found'
@@ -240,7 +241,6 @@ def save_doctor_tt(args, form):
 def show_tt_in_contract(args, form):
     contract_id = args.get('contract_id')
     contract_manager.change_show_tt_mode(contract_id, True)
-
     medsenger_api.update_cache(contract_id)
 
     return 'ok'
@@ -251,7 +251,6 @@ def show_tt_in_contract(args, form):
 def hide_tt_in_contract(args, form):
     contract_id = args.get('contract_id')
     contract_manager.change_show_tt_mode(contract_id, False)
-
     medsenger_api.update_cache(contract_id)
     return 'ok'
 
