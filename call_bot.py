@@ -146,8 +146,6 @@ def order(data):
         contract_manager.add(contract_id)
 
     if data['order'] == 'start_call':
-        if contract_manager.not_exists(contract_id):
-            contract_manager.add(contract_id)
         call_manager.start_call(contract_id)
         return 'ok'
     if data['order'] == 'select_call_time':
@@ -159,8 +157,6 @@ def order(data):
                                    only_doctor=True)
         return 'ok'
     if data['order'] == 'show_timetable':
-        if contract_manager.not_exists(contract_id):
-            contract_manager.add(contract_id)
         contract_manager.change_show_tt_mode(contract_id, True)
         return 'ok'
 
