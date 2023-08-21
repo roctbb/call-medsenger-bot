@@ -155,7 +155,13 @@ def order(data):
                                    'Для этого воспользуйтесь кнопкой:',
                                    action_name='Выбрать время', action_link='appointment', action_big=False,
                                    only_patient=True, action_onetime=True)
-        medsenger_api.send_message(contract_id, 'Пациенту отправлена ссылка на выбор времени консультации.', only_doctor=True)
+        medsenger_api.send_message(contract_id, 'Пациенту отправлена ссылка на выбор времени консультации.',
+                                   only_doctor=True)
+        return 'ok'
+    if data['order'] == 'show_timetable':
+        if contract_manager.not_exists(contract_id):
+            contract_manager.add(contract_id)
+        contract_manager.change_show_tt_mode(contract_id, True)
         return 'ok'
 
     return 'not found'
@@ -276,15 +282,19 @@ def save_appointment(args, form):
     timeslot, is_new = timetable_manager.add(slot)
 
     patient_info = medsenger_api.get_patient_info(contract_id)
-    patient_datetime = datetime.utcfromtimestamp(slot['timestamp']) - timedelta(minutes=patient_info.get('timezone_offset', -180))
-    doctor_datetime = datetime.utcfromtimestamp(slot['timestamp']) - timedelta(minutes=patient_info.get('doctor_timezone_offset', -180))
+    patient_datetime = datetime.utcfromtimestamp(slot['timestamp']) - timedelta(
+        minutes=patient_info.get('timezone_offset', -180))
+    doctor_datetime = datetime.utcfromtimestamp(slot['timestamp']) - timedelta(
+        minutes=patient_info.get('doctor_timezone_offset', -180))
 
     medsenger_api.send_message(contract_id,
-                               'Онлайн-встреча с врачом запланирована на {} по Вашему часовому поясу. '.format(patient_datetime.strftime('%d.%m в %H:%M')) +
+                               'Онлайн-встреча с врачом запланирована на {} по Вашему часовому поясу. '.format(
+                                   patient_datetime.strftime('%d.%m в %H:%M')) +
                                'За 10 минут до назначенного времени Вам придет сообщение с информацией для подключения.',
                                only_patient=True)
     medsenger_api.send_message(contract_id,
-                               'Онлайн-встреча с пациентом запланирована на {} по Вашему часовому поясу. '.format(doctor_datetime.strftime('%d.%m в %H:%M')) +
+                               'Онлайн-встреча с пациентом запланирована на {} по Вашему часовому поясу. '.format(
+                                   doctor_datetime.strftime('%d.%m в %H:%M')) +
                                'За 10 минут до назначенного времени Вам придет сообщение с информацией для подключения.',
                                only_doctor=True)
 
