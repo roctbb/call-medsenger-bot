@@ -31,6 +31,29 @@ def status(data):
     return jsonify(answer)
 
 
+@app.route('/order', methods=['POST'])
+@verify_json
+def order(data):
+    contract_id = data.get('contract_id')
+    if contract_manager.not_exists(contract_id):
+        contract_manager.add(contract_id)
+
+    if data['order'] == 'start_call':
+        if contract_manager.not_exists(contract_id):
+            contract_manager.add(contract_id)
+        call_manager.start_call(contract_id)
+        return 'ok'
+    if data['order'] == 'select_call_time':
+        medsenger_api.send_message(contract_id, 'Вам необходимо запланировать онлайн-встречу с врачом. ' +
+                                   'Для этого воспользуйтесь кнопкой:',
+                                   action_name='Выбрать время', action_link='appointment', action_big=False,
+                                   only_patient=True, action_onetime=True)
+        medsenger_api.send_message(contract_id, 'Пациенту отправлена ссылка на выбор времени консультации.', only_doctor=True)
+        return 'ok'
+
+    return 'not found'
+
+
 # contract management api
 
 
@@ -138,29 +161,6 @@ def instant_call(args, form):
     return get_ui(contract, 'done')
 
 
-@app.route('/order', methods=['POST'])
-@verify_json
-def order(data):
-    contract_id = data.get('contract_id')
-    if contract_manager.not_exists(contract_id):
-        contract_manager.add(contract_id)
-
-    if data['order'] == 'start_call':
-        if contract_manager.not_exists(contract_id):
-            contract_manager.add(contract_id)
-        call_manager.start_call(contract_id)
-        return 'ok'
-    if data['order'] == 'select_call_time':
-        medsenger_api.send_message(contract_id, 'Вам необходимо запланировать онлайн-встречу с врачом. ' +
-                                   'Для этого воспользуйтесь кнопкой:',
-                                   action_name='Выбрать время', action_link='appointment', action_big=False,
-                                   only_patient=True, action_onetime=True)
-        medsenger_api.send_message(contract_id, 'Пациенту отправлена ссылка на выбор времени консультации.', only_doctor=True)
-        return 'ok'
-
-    return 'not found'
-
-
 @app.route('/appointment', methods=['GET'])
 @verify_args
 def get_appointment(args, form):
@@ -168,6 +168,7 @@ def get_appointment(args, form):
     return get_ui(contract, 'appointment')
 
 
+# settings api
 @app.route('/<call_id>/<call_pass>', methods=['GET'])
 def call(call_id, call_pass):
     sign = get_sign(call_id)
@@ -177,7 +178,6 @@ def call(call_id, call_pass):
         return "<h1>Этот видеозвонок уже завершен.</h1>"
 
 
-# settings api
 @app.route('/api/settings/get_patient/<contract_id>', methods=['GET'])
 @verify_args
 def get_patient(args, form, contract_id):
