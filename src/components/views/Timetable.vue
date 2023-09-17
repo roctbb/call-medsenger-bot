@@ -9,7 +9,7 @@
             </div>
             <div>
                 <date-picker type="week" value-type="timestamp" style="width: 230px"
-                             :clearable="false" :formatter="formatter"
+                             :clearable="false" :formatter="formatter" :min-date="new Date()"
                              v-model="date" @change="update"/>
             </div>
             <button class="btn btn-sm btn-primary" @click="save()">Сохранить</button>
@@ -75,14 +75,12 @@
                         <div class="col align-self-end" style="font-size: small; text-align: right">
                             <button class="btn btn-link shadow-none" @click="add_call(day, time, i, j)"
                                     v-if="!(tt_slots[i][j] &&
-                                    ['scheduled', 'finished'].includes(tt_slots[i][j].status)) &&
-                                    !expired(`${day.date} ${time}`)">+
-                            </button>
+                                          ['scheduled', 'finished'].includes(tt_slots[i][j].status)) &&
+                                          !expired(`${day.date} ${time}`)">+</button>
                             <button class="btn btn-link shadow-none" @click="cancel_call(day, time, i, j)"
                                     v-if="tt_slots[i][j] &&
-                                    tt_slots[i][j].status == 'scheduled' &&
-                                    !expired(`${day.date} ${time}`)">&#215;
-                            </button>
+                                          tt_slots[i][j].status === 'scheduled' && tt_slots[i][j].patient_name &&
+                                          !expired(`${day.date} ${time}`)">&#215;</button>
                         </div>
                     </div>
                 </td>
@@ -114,6 +112,14 @@ export default {
                 show_tt: window.PARAMS.show_tt,
                 btn_lock: false
             },
+            tt_settings: {
+                start_time: moment('07:00', 'HH:mm'),
+                end_time: moment('23:00', 'HH:mm'),
+                session_duration: 30,
+                session_slots_cnt: 1,
+                slot_offset: 30,
+                slots_cnt: 33
+            },
             errors: [],
             msg: undefined,
             days: [],
@@ -142,26 +148,31 @@ export default {
     methods: {
         load_timetable: function () {
             this.flags.loaded = false
+
             this.tt = []
             this.tt_slots = []
+
             for (let i = 0; i < this.cols_count; i++) {
-                this.tt.push(Array(2 * 16 + 1).fill(false))
-                this.tt_slots.push(Array(2 * 16 + 1).fill(undefined))
+                this.tt.push(Array(this.tt_settings.slots_cnt).fill(false))
+                this.tt_slots.push(Array(this.tt_settings.slots_cnt).fill(undefined))
             }
 
             let date = !this.mobile ?
                 moment(this.date).startOf('week').add(1, 'day').unix() :
                 moment(this.date).startOf('day').unix()
+
             let start = !this.mobile ?
                 moment(this.date).startOf('week').add(1, 'day') :
                 moment(this.date).startOf('day')
+
             this.days = []
+
             while (this.days.length < this.cols_count) {
                 this.days.push({
                     start_of_day: start,
                     date: start.format('DD.MM.YYYY'),
                     short_date: start.format('DD.MM'),
-                    weekday: start.weekday() == 0 ? 6 : start.weekday() - 1,
+                    weekday: start.weekday() === 0 ? 6 : start.weekday() - 1,
                 })
                 start = start.add(1, 'day')
             }
@@ -169,22 +180,33 @@ export default {
             this.axios.get(this.url(`/api/settings/get_doctor_timetable/${date}/${this.cols_count}`))
                 .then((response) => {
                     this.slots = response.data
+
                     this.slots.forEach(slot => {
                         let time = moment.unix(slot.timestamp)
                         slot.time = time.format('DD.MM в HH:mm')
-                        let i = this.days.findIndex(d => d.date == time.format('DD.MM.YYYY'))
-                        let j = this.time_slots.findIndex(t => t == time.format('HH:mm'))
-                        this.tt[i][j] = slot.status != 'unavailable'
+
+                        let i = this.days.findIndex(d => d.date === time.format('DD.MM.YYYY'))
+                        let j = this.time_slots.findIndex(t => t === time.format('HH:mm'))
+
+                        if (this.tt_slots[i][j]) return
+
+                        this.tt[i][j] = slot.status !== 'unavailable'
+
+                        if (slot.status === 'scheduled') this.fill_slots(i, j)
+
                         this.tt_slots[i][j] = slot
                     })
+
                     this.$forceUpdate()
+
                     this.flags.loaded = true
                 })
         },
         change_tt: function (mode, date, time) {
             this.msg = undefined
+
             let timestamp = moment(`${date.date} ${time}`, 'DD.MM.YYYY HH:mm').unix()
-            let slot = this.slots.filter(s => s.timestamp == timestamp)[0]
+            let slot = this.slots.filter(s => s.timestamp === timestamp)[0]
 
             if (slot) {
                 slot.status = mode ? 'available' : 'unavailable'
@@ -208,7 +230,7 @@ export default {
                             this.msg = undefined
 
                             let timestamp = moment(`${day.date} ${time}`, 'DD.MM.YYYY HH:mm').unix()
-                            let slot = this.slots.filter(s => s.timestamp == timestamp)[0]
+                            let slot = this.slots.filter(s => s.timestamp === timestamp)[0]
 
                             if (!slot) {
                                 slot = {
@@ -231,6 +253,8 @@ export default {
                                 slot.id = response.data.id
                                 this.tt_slots[i][j] = slot
                                 this.msg = `${this.call_description(this.tt_slots[i][j])} успешно запланирована!`
+
+                                this.fill_slots(i, j)
 
                                 this.$forceUpdate()
                             });
@@ -258,6 +282,8 @@ export default {
                             this.tt_slots[i][j].patient_id = undefined
                             this.tt_slots[i][j].contract_id = undefined
                             this.tt[i][j] = true
+
+                            this.fill_slots(i, j, true)
 
                             this.$forceUpdate()
                         })
@@ -328,25 +354,39 @@ export default {
         },
         cell_bg: function (dt, timeslot, tt) {
             let color = tt ? '#e9f6f7' : 'transparent'
-            if (timeslot && timeslot.status == 'available') color = '#e9f6f7'
+            if (timeslot && timeslot.status === 'available') color = '#e9f6f7'
             if (timeslot && ['scheduled', 'finished'].includes(timeslot.status)) color = '#d1edef'
             if (this.expired(dt)) color = '#f8f8f8'
             return 'background-color: ' + color
         },
         call_description: function (slot) {
             return `Онлайн-встреча с пациентом <b>${slot.patient_name} на ${slot.time}</b>`
+        },
+        fill_slots: function (slot_day_index, slot_index, cancel) {
+            let max_cnt = Math.min(this.tt_settings.slots_cnt, slot_index + this.tt_settings.session_slots_cnt)
+            for (let index = slot_index + 1; index < max_cnt; index++) {
+                if (cancel) {
+                    if (this.tt_slots[slot_day_index][index].old_status)
+                        this.tt_slots[slot_day_index][index].status = this.tt_slots[slot_day_index][index].old_status
+                    else this.tt_slots[slot_day_index][index] = undefined
+                    continue
+                }
+                if (!this.tt_slots[slot_day_index][index]) this.tt_slots[slot_day_index][index] = {}
+                else this.tt_slots[slot_day_index][index].old_status = this.tt_slots[slot_day_index][index].status
+
+                this.tt_slots[slot_day_index][index].status = 'scheduled'
+            }
         }
     },
     computed: {
-        time_slots: function () {
+        time_slots() {
             let slots = []
-            let time = moment('07:00', 'HH:mm')
+            let time = this.tt_settings.start_time
 
-            while (slots.length < 2 * 16 + 1) {
+            while (slots.length < this.tt_settings.slots_cnt) {
                 slots.push(time.format('HH:mm'))
-                time = time.add(30, 'minutes')
+                time = time.add(this.tt_settings.slot_offset, 'minutes')
             }
-
             return slots
         },
         col_width: function () {
@@ -363,9 +403,23 @@ export default {
         this.date = this.mobile ?
             moment().startOf('day').unix() * 1000 :
             moment().startOf('week').add(1, 'day').unix() * 1000
+
+        if (this.patient.clinic_info) {
+            this.tt_settings = {
+                start_time: moment(this.patient.clinic_info.start_time, 'HH:mm'),
+                end_time: moment(this.patient.clinic_info.end_time, 'HH:mm'),
+                session_duration: this.patient.clinic_info.duration,
+                session_slots_cnt: undefined,
+                slot_offset: this.patient.clinic_info.offset,
+                slots_cnt: undefined
+            }
+            this.tt_settings.slots_cnt = Math.ceil(this.tt_settings.end_time.diff(this.tt_settings.start_time, 'minutes') / this.tt_settings.slot_offset) + 1
+            this.tt_settings.session_slots_cnt = Math.ceil(this.tt_settings.session_duration / this.tt_settings.slot_offset)
+        }
+
         this.load_timetable()
         Event.listen('dashboard-to-main', () => {
-            if (window.MODE == 'settings') {
+            if (window.MODE === 'settings') {
                 this.state = 'main'
             }
         });

@@ -1,6 +1,6 @@
 from helpers import log
 from managers.Manager import Manager
-from models import Contract
+from models import Contract, Clinic
 
 
 class ContractManager(Manager):
@@ -37,9 +37,6 @@ class ContractManager(Manager):
 
             contract.is_active = False
 
-            for object in contract.forms + contract.algorithms + contract.medicines + contract.reminders:
-                self.db.session.delete(object)
-
             self.__commit__()
         except Exception as e:
             log(e)
@@ -60,6 +57,12 @@ class ContractManager(Manager):
             raise Exception("No contract_id = {} found".format(contract_id))
 
         patient_info = self.medsenger_api.get_patient_info(contract_id)
+
+        clinic = Clinic.query.filter_by(id=contract.clinic_id).first()
+        if clinic:
+            patient_info.update({
+                "clinic_info": clinic.as_dict()
+            })
 
         return patient_info
 

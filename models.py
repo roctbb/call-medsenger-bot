@@ -70,3 +70,24 @@ class Room(db.Model):
             'had_connection': self.had_connection,
             'contract_id': self.contract_id
         }
+
+
+class Clinic(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+
+    session_duration = db.Column(db.Integer, nullable=True, default=30)
+
+    day_start_time = db.Column(db.String(5), nullable=True)
+    day_end_time = db.Column(db.String(5), nullable=True)
+
+    timeslot_offset = db.Column(db.Integer, nullable=True, default=30)
+
+    def as_dict(self):
+        return {
+            'id': self.id,
+            'duration': self.session_duration,
+            'offset': self.timeslot_offset,
+            'start_time': self.day_start_time,
+            'end_time': self.day_end_time
+        }
+

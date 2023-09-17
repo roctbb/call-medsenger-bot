@@ -1,8 +1,8 @@
 <template>
     <div>
         Пожалуйста, выберите удобное для звонка время. После этого необходимо подтвердить свой выбор.
-                <br>
-                <span class="text-muted">* Время указано в Вашем часовом поясе</span>
+        <br>
+        <span class="text-muted">* Время указано в Вашем часовом поясе</span>
         <br>
         <button class="btn btn-success" style="margin-top: 10px" :disabled="!chosen_slot" @click="save()">Выбрать
             <span v-if="chosen_slot">{{ chosen_slot.date }}, {{ chosen_slot.time }}</span>
@@ -43,17 +43,31 @@ export default {
         load_timetable: function () {
             this.axios.get(this.url('/api/settings/get_doctor_timetable')).then((response) => {
                 if (!response.data.length) this.errors = ['К сожалению, у врача нет доступных для записи слотов.']
-                let slots = response.data
-                    .filter(slot => slot.status == 'available' && slot.timestamp > moment().unix())
-                    .sort((a, b) => a.timestamp - b.timestamp)
+                let duration = this.patient.clinic_info ? this.patient.clinic_info.duration : 30
+
+                let slots = response.data.sort((a, b) => a.timestamp - b.timestamp)
+                slots.forEach((slot, i) => {
+                    if (slot.status === 'scheduled') {
+                        let index = i + 1
+
+                        while (slots.length > index && slots[index].timestamp < slot.timestamp + duration * 60) {
+                            slots[index].status = 'unavailable'
+                            index++
+                        }
+                    }
+                })
+
+                slots = slots.filter(slot => slot.status === 'available' && slot.timestamp > moment().unix())
+
                 let current_day_index = -1
+
                 slots.forEach(slot => {
                     let time = moment.unix(slot.timestamp)
-                    if (current_day_index < 0 || this.days[current_day_index].date != time.format('DD.MM')) {
+                    if (current_day_index < 0 || this.days[current_day_index].date !== time.format('DD.MM')) {
                         current_day_index += 1
                         this.days.push({
                             date: time.format('DD.MM'),
-                            weekday: this.weekdays[time.weekday() == 0 ? 6 : time.weekday() - 1].toLowerCase(),
+                            weekday: this.weekdays[time.weekday() === 0 ? 6 : time.weekday() - 1].toLowerCase(),
                             slots: []
                         })
                     }
@@ -65,7 +79,7 @@ export default {
             })
         },
         btn_style: function (slot) {
-            return 'btn ' + (this.chosen_slot && slot.id == this.chosen_slot.id ? 'btn-primary' : 'btn-secondary')
+            return 'btn ' + (this.chosen_slot && slot.id === this.chosen_slot.id ? 'btn-primary' : 'btn-secondary')
         },
         choose_slot: function (slot) {
             this.chosen_slot = slot

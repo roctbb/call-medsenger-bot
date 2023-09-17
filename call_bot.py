@@ -181,7 +181,7 @@ def call(call_id, call_pass):
 @app.route('/api/settings/get_patient/<contract_id>', methods=['GET'])
 @verify_args
 def get_patient(args, form, contract_id):
-    patient = medsenger_api.get_patient_info(contract_id)
+    patient = contract_manager.get_patient(contract_id)
 
     return jsonify(patient)
 
