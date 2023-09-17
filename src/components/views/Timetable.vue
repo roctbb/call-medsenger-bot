@@ -246,8 +246,8 @@ export default {
 
                             let name_parts = this.patient.name.split(' ')
                             slot.patient_name = name_parts[0]
-                            if (name_parts.length > 1) slot.patient_name += ` ${name_parts[1][0]}.`
-                            if (name_parts.length > 2) slot.patient_name += ` ${name_parts[2][0]}.`
+                            if (name_parts.length > 1 && name_parts[1][0]) slot.patient_name += ` ${name_parts[1][0]}.`
+                            if (name_parts.length > 2 && name_parts[2][0]) slot.patient_name += ` ${name_parts[2][0]}.`
 
                             this.axios.post(this.url('/save_appointment'), slot).then((response) => {
                                 slot.id = response.data.id
