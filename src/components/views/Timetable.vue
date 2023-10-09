@@ -1,47 +1,50 @@
 <template>
     <div>
-        <div class="row align-items-center"
-             style="margin: 5px 0" v-if="!mobile">
-            <div class="col" style="padding: 0">
-                Пожалуйста, отметьте удобное для Вас время
-                <br>
-                <span class="text-muted">* Время указано в Вашем часовом поясе</span>
+        <div v-if="!mobile">
+            <div class="row align-items-center" style="margin: 5px 0">
+                <button class="btn btn-sm btn-primary" @click="save()">Сохранить расписание</button>
+                <button class="btn btn-sm btn-primary" @click="send()">Отправить пациенту ссылку для записи</button>
+                <button class="btn btn-sm btn-primary" @click="change_show_mode()" :disabled="flags.btn_lock">
+                    {{ flags.show_tt ? 'Запретить' : 'Разрешить' }} пациенту самостоятельно записываться
+                </button>
             </div>
-            <div>
-                <date-picker type="week" value-type="timestamp" style="width: 230px"
-                             :clearable="false" :formatter="formatter" :min-date="new Date()"
-                             v-model="date" @change="update"/>
+            <success-message :message="msg" v-if="msg"/>
+            <hr>
+            <div class="row align-items-center" style="margin: 5px 0">
+                <div class="col">
+                    Пожалуйста, отметьте удобное для Вас время
+                    <br>
+                    <span class="text-muted">* Время указано в Вашем часовом поясе</span>
+                </div>
+                <div class="col">
+                    Показать расписание
+                    <date-picker type="week" value-type="timestamp" style="width: 100%"
+                                 :clearable="false" :formatter="formatter" :min-date="new Date()"
+                                 v-model="date" @change="update"/>
+                </div>
             </div>
-            <button class="btn btn-sm btn-primary" @click="save()">Сохранить</button>
-            <button class="btn btn-sm btn-primary" @click="send()">Отправить пациенту</button>
-            <button class="btn btn-sm btn-primary" @click="change_show_mode()" :disabled="flags.btn_lock">
-                {{ flags.show_tt ? 'Закрыть' : 'Открыть' }}
-                расписание
-            </button>
         </div>
         <div style="margin: 5px 0" v-else>
-            <div style="padding: 0">
+            <button class="btn btn-block btn-primary" @click="save()">Сохранить расписание</button>
+            <button class="btn btn-block btn-primary" @click="send()">Отправить пациенту ссылку для записи</button>
+            <button class="btn btn-block btn-primary" @click="change_show_mode()" :disabled="flags.btn_lock">
+                {{ flags.show_tt ? 'Запретить' : 'Разрешить' }} пациенту самостоятельно записываться
+            </button>
+            <success-message :message="msg" v-if="msg"/>
+            <hr>
+            <div style="margin: 5px 0;">
+                Показать расписание на
+                <date-picker type="day" value-type="timestamp" style="width: 100%" format="DD.MM.YYYY"
+                             :clearable="false" v-model="date" @change="update"/>
+            </div>
+            <div style="margin: 10px 0;">
                 Пожалуйста, отметьте удобное для Вас время
                 <br>
                 <span class="text-muted">* Время указано в Вашем часовом поясе</span>
             </div>
-            <div style="margin: 5px 0;">
-                <date-picker type="day" value-type="timestamp" style="width: 100%"
-                             format="DD.MM.YYYY"
-                             :clearable="false" v-model="date" @change="update"/>
-            </div>
-            <button class="btn btn-sm btn-primary" @click="save()">Сохранить</button>
-            <button class="btn btn-sm btn-primary" @click="send()">Отправить пациенту</button>
-            <br>
-            <button class="btn btn-sm btn-primary" @click="change_show_mode()"
-                    style="margin-top: 2px"
-                    :disabled="flags.btn_lock">{{ flags.show_tt ? 'Закрыть' : 'Открыть' }}
-                расписание
-            </button>
         </div>
 
         <error-block :errors="errors"/>
-        <success-message :message="msg" v-if="msg"/>
 
         <loading v-if="!days.length"/>
         <table class="table-bordered fixed-columns" style="font-size: smaller;">
@@ -76,11 +79,13 @@
                             <button class="btn btn-link shadow-none" @click="add_call(day, time, i, j)"
                                     v-if="!(tt_slots[i][j] &&
                                           ['scheduled', 'finished'].includes(tt_slots[i][j].status)) &&
-                                          !expired(`${day.date} ${time}`)">+</button>
+                                          !expired(`${day.date} ${time}`)">+
+                            </button>
                             <button class="btn btn-link shadow-none" @click="cancel_call(day, time, i, j)"
                                     v-if="tt_slots[i][j] &&
                                           tt_slots[i][j].status === 'scheduled' && tt_slots[i][j].patient_name &&
-                                          !expired(`${day.date} ${time}`)">&#215;</button>
+                                          !expired(`${day.date} ${time}`)">&#215;
+                            </button>
                         </div>
                     </div>
                 </td>
