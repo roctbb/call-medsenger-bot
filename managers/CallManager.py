@@ -146,13 +146,13 @@ class CallManager(Manager):
                 print(patient_text)
 
             self.medsenger_api.send_message(contract_id,
-                                            'Видеозвонок c пациентом{} (ссылка действительна в течении 60 минут).'
+                                            'Видеозвонок c пациентом{} (ссылка действительна в течение 60 минут).'
                                             .format(doctor_text),
                                             action_link=doctor_link, action_type='url', action_name='Подключиться',
                                             only_doctor=True, action_deadline=int(time.time() + 60 * 60))
 
             self.medsenger_api.send_message(contract_id,
-                                            'Видеозвонок от врача{} (ссылка действительна в течении 60 минут).'
+                                            'Видеозвонок от врача{} (ссылка действительна в течение 60 минут).'
                                             .format(patient_text),
                                             action_link=patient_link, action_type='url', action_name='Подключиться',
                                             only_patient=True, action_deadline=int(time.time() + 60 * 60))
