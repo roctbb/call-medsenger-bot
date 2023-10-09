@@ -114,7 +114,6 @@ class CallManager(Manager):
             self.medsenger_api.send_message(contract_id, 'Видеозвонок от врача.', action_link=call_url,
                                             action_type='zoom', action_name='Подключиться к звонку',
                                             send_from='doctor', action_deadline=int(time.time() + 60 * 25))
-
             if timeslot_id:
                 timeslot = TimeSlot.query.filter_by(id=timeslot_id).first()
                 timeslot.status = 'finished'
@@ -131,16 +130,34 @@ class CallManager(Manager):
                 "contract_id": contract_id
             })
 
-            self.medsenger_api.send_message(contract_id, 'Видеозвонок c пациентом.', action_link=doctor_link,
-                                            action_type='url', action_name='Подключиться',
+            timeslot = None
+            patient_text = ''
+            doctor_text = ''
+            if timeslot_id:
+                timeslot = TimeSlot.query.filter_by(id=timeslot_id).first()
+                patient_info = self.medsenger_api.get_patient_info(contract_id)
+                call_time = datetime.utcfromtimestamp(timeslot.date.timestamp())
+
+                patient_datetime = call_time - timedelta(minutes=patient_info.get('timezone_offset', -180))
+                doctor_datetime = call_time - timedelta(minutes=patient_info.get('doctor_timezone_offset', -180))
+
+                doctor_text = ', запланированный на {}'.format(doctor_datetime.strftime('%d.%m в %H:%M'))
+                patient_text = ', запланированный на {}'.format(patient_datetime.strftime('%d.%m в %H:%M'))
+                print(patient_text)
+
+            self.medsenger_api.send_message(contract_id,
+                                            'Видеозвонок c пациентом{} (ссылка действительна в течении 60 минут).'
+                                            .format(doctor_text),
+                                            action_link=doctor_link, action_type='url', action_name='Подключиться',
                                             only_doctor=True, action_deadline=int(time.time() + 60 * 60))
 
-            self.medsenger_api.send_message(contract_id, 'Видеозвонок от врача.', action_link=patient_link,
-                                            action_type='url', action_name='Подключиться',
+            self.medsenger_api.send_message(contract_id,
+                                            'Видеозвонок от врача{} (ссылка действительна в течении 60 минут).'
+                                            .format(patient_text),
+                                            action_link=patient_link, action_type='url', action_name='Подключиться',
                                             only_patient=True, action_deadline=int(time.time() + 60 * 60))
 
             if timeslot_id:
-                timeslot = TimeSlot.query.filter_by(id=timeslot_id).first()
                 timeslot.status = 'finished'
                 self.__commit__()
 
