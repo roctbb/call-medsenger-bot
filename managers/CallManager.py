@@ -141,8 +141,8 @@ class CallManager(Manager):
                 patient_offset = patient_info.get('timezone_offset')
                 doctor_offset = patient_info.get('doctor_timezone_offset')
 
-                patient_datetime = call_time - timedelta(minutes=patient_offset if patient_offset else -180)
-                doctor_datetime = call_time - timedelta(minutes=doctor_offset if doctor_offset else -180)
+                patient_datetime = call_time - timedelta(minutes=patient_offset if patient_offset is not None else -180)
+                doctor_datetime = call_time - timedelta(minutes=doctor_offset if doctor_offset is not None else -180)
 
                 doctor_text = ', запланированный на {}'.format(doctor_datetime.strftime('%d.%m в %H:%M'))
                 patient_text = ', запланированный на {}'.format(patient_datetime.strftime('%d.%m в %H:%M'))
