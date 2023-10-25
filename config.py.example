@@ -21,3 +21,5 @@ ZOOM_SECRET = ''
 DEFAULT_ACCOUNT = ('', '')
 
 VC_KEY = ''
+
+SENTRY_DSN = ''
