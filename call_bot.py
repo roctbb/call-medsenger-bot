@@ -277,10 +277,14 @@ def save_appointment(args, form):
     timeslot, is_new = timetable_manager.add(slot)
 
     patient_info = medsenger_api.get_patient_info(contract_id)
+    patient_offset = patient_info.get('timezone_offset')
+    doctor_offset = patient_info.get('doctor_timezone_offset')
+
+
     patient_datetime = datetime.utcfromtimestamp(slot['timestamp']) - timedelta(
-        minutes=patient_info.get('timezone_offset', -180))
+        minutes=patient_offset if patient_offset else -180)
     doctor_datetime = datetime.utcfromtimestamp(slot['timestamp']) - timedelta(
-        minutes=patient_info.get('doctor_timezone_offset', -180))
+        minutes=doctor_offset if doctor_offset else -180)
 
     medsenger_api.send_message(contract_id,
                                'Онлайн-встреча с врачом запланирована на {} по Вашему часовому поясу. '.format(
