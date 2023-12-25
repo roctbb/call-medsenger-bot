@@ -38,6 +38,9 @@ Vue.mixin({
 
             return api_host + '/api/client/agents/' + agent_id + '/?action=' + action + '&contract_id=' + contract_id + '&agent_token=' + agent_token
         },
+        image_url: function (file_name) {
+            return 'https://common.medsenger.ru/images/' + file_name
+        },
         isJsonString: function (str) {
             if (!str)
                 return true;
@@ -69,15 +72,11 @@ Vue.mixin({
             short_weekdays: ['пн', 'вт', 'ср', 'чт', 'пт', 'сб', 'вс'],
             axios: require('axios'),
             images: {
-                ok: window.LOCAL_HOST + '/static/images/icons8-ok-128.png',
-                error: window.LOCAL_HOST + '/static/images/icons8-delete-128.png',
-                male_patient: window.LOCAL_HOST + '/static/images/icons8-male-videocall-100.png',
-                female_patient: window.LOCAL_HOST + '/static/images/icons8-female-videocall-100.png',
-                finished_male_patient: window.LOCAL_HOST + '/static/images/icons8-finished-male-videocall-100.png',
-                finished_female_patient: window.LOCAL_HOST + '/static/images/icons8-finished-female-videocall-100.png',
-                video_call: window.LOCAL_HOST + '/static/images/icons8-videocall-100.png',
-                start_video_call: window.LOCAL_HOST + '/static/images/icons8-chatting-100.png',
-                nothing_found: window.LOCAL_HOST + '/static/images/icons8-nothing-found-100.png'
+                ok: this.image_url('icons8-ok-128.png'),
+                error: this.image_url('icons8-delete-128.png'),
+                video_call: this.image_url('icons8-videocall-100.png'),
+                start_video_call: this.image_url('icons8-chatting-100.png'),
+                nothing_found: this.image_url('icons8-nothing-found-100.png')
             },
             window_mode: window.MODE
         }
