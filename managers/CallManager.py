@@ -138,21 +138,24 @@ class CallManager(Manager):
                 patient_info = self.medsenger_api.get_patient_info(contract_id)
                 call_time = datetime.utcfromtimestamp(timeslot.date.timestamp())
 
-                patient_datetime = call_time - timedelta(minutes=patient_info.get('timezone_offset', -180))
-                doctor_datetime = call_time - timedelta(minutes=patient_info.get('doctor_timezone_offset', -180))
+                patient_offset = patient_info.get('timezone_offset')
+                doctor_offset = patient_info.get('doctor_timezone_offset')
+
+                patient_datetime = call_time - timedelta(minutes=patient_offset if patient_offset is not None else -180)
+                doctor_datetime = call_time - timedelta(minutes=doctor_offset if doctor_offset is not None else -180)
 
                 doctor_text = ', запланированный на {}'.format(doctor_datetime.strftime('%d.%m в %H:%M'))
                 patient_text = ', запланированный на {}'.format(patient_datetime.strftime('%d.%m в %H:%M'))
                 print(patient_text)
 
             self.medsenger_api.send_message(contract_id,
-                                            'Видеозвонок c пациентом{} (ссылка действительна в течении 60 минут).'
+                                            'Видеозвонок c пациентом{} (ссылка действительна в течение 60 минут).'
                                             .format(doctor_text),
                                             action_link=doctor_link, action_type='url', action_name='Подключиться',
                                             only_doctor=True, action_deadline=int(time.time() + 60 * 60))
 
             self.medsenger_api.send_message(contract_id,
-                                            'Видеозвонок от врача{} (ссылка действительна в течении 60 минут).'
+                                            'Видеозвонок от врача{} (ссылка действительна в течение 60 минут).'
                                             .format(patient_text),
                                             action_link=patient_link, action_type='url', action_name='Подключиться',
                                             only_patient=True, action_deadline=int(time.time() + 60 * 60))

@@ -93,11 +93,14 @@ class TimetableManager(Manager):
             if timeslot['contract_id']:
                 info = self.medsenger_api.get_patient_info(timeslot['contract_id'])
                 name_parts = list(filter(lambda x:bool(x), info['name'].split(' ')))
-                timeslot['patient_name'] = name_parts[0]
-                if len(name_parts) > 1:
-                    timeslot['patient_name'] += ' {}.'.format(name_parts[1][0])
-                if len(name_parts) > 2:
-                    timeslot['patient_name'] += ' {}.'.format(name_parts[2][0])
+                if name_parts:
+                    timeslot['patient_name'] = name_parts[0]
+                    if len(name_parts) > 1:
+                        timeslot['patient_name'] += ' {}.'.format(name_parts[1][0])
+                    if len(name_parts) > 2:
+                        timeslot['patient_name'] += ' {}.'.format(name_parts[2][0])
+                else:
+                    timeslot['patient_name'] = ''
                 timeslot['patient_sex'] = info['sex']
         return timeslots
 

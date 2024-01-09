@@ -11,3 +11,4 @@ APScheduler~=3.10.0
 tzlocal~=4.2
 psycopg2-binary
 sentry-sdk
+sentry-sdk[flask]
