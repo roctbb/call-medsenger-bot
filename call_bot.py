@@ -200,6 +200,15 @@ def get_doctor_tt(args, form):
     return jsonify(timetable)
 
 
+@app.route('/api/settings/get_call_history', methods=['GET'])
+@verify_args
+def get_call_history(args, form):
+    contract_id = args.get('contract_id')
+    history = call_manager.get_call_history(contract_id)
+
+    return jsonify(history)
+
+
 @app.route('/api/settings/get_doctor_timetable/<int:start>/<int:days>', methods=['GET'])
 @verify_args
 def get_doctor_week_tt(args, form, start, days):

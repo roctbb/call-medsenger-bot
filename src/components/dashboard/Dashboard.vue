@@ -7,6 +7,9 @@
             <button :class="'btn btn-sm ' + btn_color('calls')"
                     @click="change_state('calls')">Ближайшие звонки
             </button>
+            <button :class="'btn btn-sm ' + btn_color('history')"
+                    @click="change_state('history')">История звонков
+            </button>
         </div>
 
         <div style="margin-top: 10px" v-if="state == 'timetable'">
@@ -15,6 +18,10 @@
         <div style="margin-top: 10px" v-if="state == 'calls'">
             <calls-list source="doctor"/>
         </div>
+        <div style="margin-top: 10px" v-if="state == 'history'">
+            <calls-history/>
+        </div>
+
     </div>
 </template>
 
@@ -24,10 +31,11 @@ import Timetable from "../views/Timetable";
 import axios from "axios";
 import Call from "../views/Call";
 import CallsList from "../views/CallsList";
+import CallsHistory from "../views/CallsHistory.vue";
 
 export default {
     name: "Dashboard",
-    components: {CallsList, Call, Timetable},
+    components: {CallsHistory, CallsList, Call, Timetable},
     props: {
         patient: {
             required: true
@@ -87,4 +95,7 @@ small {
     font-size: 90% !important;
 }
 
+.btn-secondary:hover {
+    background-color: darkgray;
+}
 </style>

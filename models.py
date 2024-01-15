@@ -59,7 +59,11 @@ class Call(db.Model):
 
 class Room(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+
     had_connection = db.Column(db.Boolean, nullable=True, default=False)
+    connected = db.Column(db.DateTime(), nullable=True)
+    duration = db.Column(db.Integer, nullable=True)
+
     created = db.Column(db.DateTime(), nullable=False)
     contract_id = db.Column(db.Integer, db.ForeignKey('contract.id', ondelete="CASCADE"), nullable=True)
 
@@ -68,7 +72,9 @@ class Room(db.Model):
             'id': self.id,
             'created': self.created.timestamp(),
             'had_connection': self.had_connection,
-            'contract_id': self.contract_id
+            'contract_id': self.contract_id,
+            'connected_timestamp': self.connected.timestamp() if self.connected else self.created.timestamp(),
+            'duration': self.duration
         }
 
 

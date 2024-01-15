@@ -76,7 +76,9 @@ Vue.mixin({
                 error: this.image_url('icons8-delete-128.png'),
                 video_call: this.image_url('icons8-videocall-100.png'),
                 start_video_call: this.image_url('icons8-chatting-100.png'),
-                nothing_found: this.image_url('icons8-nothing-found-100.png')
+                nothing_found: this.image_url('icons8-nothing-found-100.png'),
+                call: this.image_url('icons8-phone-96.png'),
+                disconnected_call: this.image_url('icons8-call-disconnected-96.png')
             },
             window_mode: window.MODE
         }
