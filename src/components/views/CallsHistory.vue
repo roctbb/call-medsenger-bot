@@ -51,7 +51,7 @@ export default {
             this.loaded = false
             this.axios.get(this.url(`/api/settings/get_call_history`)).then((response) => {
                 this.calls = response.data
-                    .sort((a, b) => a.connected_timestamp - b.connected_timestamp)
+                    .sort((a, b) => b.connected_timestamp - a.connected_timestamp)
                 this.calls.forEach(call => {
                     call.start_time = moment.unix(call.connected_timestamp).format('DD.MM.YYYY в HH:mm')
                     if (call.duration) {
