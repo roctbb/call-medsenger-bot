@@ -42,6 +42,7 @@ export default {
     methods: {
         load_timetable: function () {
             this.axios.get(this.url('/api/settings/get_doctor_timetable')).then((response) => {
+                response.data = response.data.filter((s) => s.timestamp < this.patient.end_timestamp)
                 if (!response.data.length) this.errors = ['К сожалению, у врача нет доступных для записи слотов.']
                 let duration = this.patient.clinic_info ? this.patient.clinic_info.duration : 30
 
