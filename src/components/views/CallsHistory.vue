@@ -60,7 +60,7 @@ export default {
                         let seconds = (call.duration % (60 * 60)) % 60
                         call.duration_description = `${hours ? hours + ' ч. ' : ''}${minutes ? minutes + ' мин. ' : ''}${seconds} сек.`
                     } else {
-                        call.duration_description = 'Звонок не состоялся'
+                        call.duration_description = call.had_connection ? 'Звонок состоялся' : 'Звонок не состоялся'
                     }
                 })
             })
