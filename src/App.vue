@@ -5,13 +5,13 @@
         <load-error v-else-if="state == 'load-error'"/>
         <action-done v-else-if="state == 'done'"/>
         <div v-else>
-            <div v-if="window_mode == 'settings'">
+            <div v-if="['settings', 'doctor_settings'].includes(window_mode)">
                 <dashboard-header :patient="patient"/>
                 <div class="container slim-container" style="margin-top: 15px;">
                     <dashboard :patient="patient" v-show="state == 'dashboard'"/>
                 </div>
             </div>
-            <div v-else-if="window_mode = 'appointment' || window_mode == 'calls'">
+            <div v-else-if="['appointment', 'calls'].includes(this.window_mode)">
                 <div class="container slim-container" style="margin-top: 15px;">
                     <appointment :patient="patient" v-if="state == 'appointment'"/>
                     <calls-list source="patient" v-if="state == 'calls'"/>
@@ -54,7 +54,8 @@ export default {
         },
         process_load_answer: function (response) {
             this.patient = response.data;
-            if (this.window_mode == 'settings') {
+
+            if (['settings', 'doctor_settings'].includes(this.window_mode)) {
                 this.state = 'dashboard';
             } else if (this.window_mode == 'timetable') {
                 this.state = 'timetable';

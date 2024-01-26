@@ -80,7 +80,8 @@ Vue.mixin({
                 call: this.image_url('icons8-phone-96.png'),
                 disconnected_call: this.image_url('icons8-call-disconnected-96.png')
             },
-            window_mode: window.MODE
+            window_mode: window.MODE,
+            current_doctor_id: window.PARAMS.doctor_id
         }
     }
 })

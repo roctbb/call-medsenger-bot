@@ -2,7 +2,7 @@
     <div>
         <div v-if="!mobile">
             <div class="row align-items-center" style="margin: 5px 0">
-                <button class="btn btn-sm btn-primary" @click="save()">Сохранить расписание</button>
+                <button class="btn btn-sm btn-primary" @click="save()" v-if="window_mode == 'doctor_settings'">Сохранить расписание</button>
                 <button class="btn btn-sm btn-primary" @click="send()">Отправить пациенту ссылку для записи</button>
                 <button class="btn btn-sm btn-primary" @click="change_show_mode()" :disabled="flags.btn_lock">
                     {{ flags.show_tt ? 'Запретить' : 'Разрешить' }} пациенту самостоятельно записываться
@@ -12,7 +12,8 @@
             <hr>
             <div class="row align-items-center" style="margin: 5px 0">
                 <div class="col">
-                    Пожалуйста, отметьте удобное для Вас время
+                    <span v-if="window_mode == 'doctor_settings'">Пожалуйста, отметьте удобное для Вас время</span>
+                    <span v-else>В таблице ниже доступные для врача слоты.</span>
                     <br>
                     <span class="text-muted">* Время указано в Вашем часовом поясе</span>
                 </div>
@@ -22,10 +23,17 @@
                                  :clearable="false" :formatter="formatter" :min-date="new Date()"
                                  v-model="date" @change="update"/>
                 </div>
+                <div class="col" v-if="window_mode == 'settings'">
+                    Врач
+                    <select class="form-control form-control-sm" @change="change_doctor()"
+                            v-model="doctor">
+                        <option :value="d" v-for="d in patient.doctors">{{ d.name }} ({{ d.role }})</option>
+                    </select>
+                </div>
             </div>
         </div>
         <div style="margin: 5px 0" v-else>
-            <button class="btn btn-block btn-primary" @click="save()">Сохранить расписание</button>
+            <button class="btn btn-block btn-primary" @click="save()" v-if="window_mode == 'doctor_settings'">Сохранить расписание</button>
             <button class="btn btn-block btn-primary" @click="send()">Отправить пациенту ссылку для записи</button>
             <button class="btn btn-block btn-primary" @click="change_show_mode()" :disabled="flags.btn_lock">
                 {{ flags.show_tt ? 'Запретить' : 'Разрешить' }} пациенту самостоятельно записываться
@@ -37,8 +45,17 @@
                 <date-picker type="day" value-type="timestamp" style="width: 100%" format="DD.MM.YYYY"
                              :clearable="false" v-model="date" @change="update"/>
             </div>
+            <div style="margin: 5px 0;" v-if="window_mode == 'settings'">
+                Врач
+                <select class="form-control form-control-sm" @change="change_doctor()"
+                        v-model="doctor">
+                    <option :value="d" v-for="d in patient.doctors">{{ d.name }} ({{ d.role }})</option>
+                </select>
+            </div>
+
             <div style="margin: 10px 0;">
-                Пожалуйста, отметьте удобное для Вас время
+                <span v-if="window_mode == 'doctor_settings'">Пожалуйста, отметьте удобное для Вас время</span>
+                <span v-else>В таблице ниже доступные для врача слоты.</span>
                 <br>
                 <span class="text-muted">* Время указано в Вашем часовом поясе</span>
             </div>
@@ -71,7 +88,7 @@
                         </div>
                         <div class="col align-self-start" style="padding: 0" v-else>
                             <input type="checkbox" style="margin-left: 0"
-                                   :disabled="expired(`${day.date} ${time}`)" :id="`${i}_${j}`"
+                                   :disabled="expired(`${day.date} ${time}`) || window_mode == 'settings'" :id="`${i}_${j}`"
                                    @change="change_tt(tt[i][j], day, time)" v-model="tt[i][j]"/>
                         </div>
 
@@ -125,6 +142,7 @@ export default {
                 slot_offset: 30,
                 slots_cnt: 33
             },
+            doctor: undefined,
             errors: [],
             msg: undefined,
             days: [],
@@ -182,7 +200,7 @@ export default {
                 start = start.add(1, 'day')
             }
 
-            this.axios.get(this.url(`/api/settings/get_doctor_timetable/${date}/${this.cols_count}`))
+            this.axios.get(this.url(`/api/settings/get_doctor_timetable/${this.doctor.id}/${date}/${this.cols_count}`))
                 .then((response) => {
                     this.slots = response.data
 
@@ -219,7 +237,7 @@ export default {
                 this.slots.push({
                     status: mode ? 'available' : 'unavailable',
                     timestamp: timestamp,
-                    doctor_id: this.patient.doctor_id,
+                    doctor_id: this.doctor.id,
                 })
             }
         },
@@ -240,7 +258,7 @@ export default {
                             if (!slot) {
                                 slot = {
                                     timestamp: timestamp,
-                                    doctor_id: this.patient.doctor_id
+                                    doctor_id: this.doctor.id
                                 }
                                 this.slots.push(slot)
                             }
@@ -338,6 +356,12 @@ export default {
             });
         },
         send: function () {
+            let action = '/send_appointment'
+
+            if (this.patient.doctor_helpers && this.patient.doctor_helpers.length) {
+                action += '/' + this.doctor.id
+            }
+
             this.$confirm({
                     message: `Сохранить и отправить расписание?`,
                     button: {
@@ -346,7 +370,7 @@ export default {
                     },
                     callback: confirm => {
                         if (confirm) {
-                            this.axios.post(this.url('/send_appointment')).then(() => {
+                            this.axios.post(this.url(action)).then(() => {
                                 this.save(true)
                             });
                         }
@@ -381,6 +405,10 @@ export default {
 
                 this.tt_slots[slot_day_index][index].status = 'scheduled'
             }
+        },
+        change_doctor: function () {
+            this.loaded = false
+            this.load_timetable()
         }
     },
     computed: {
@@ -405,6 +433,10 @@ export default {
     created() {
     },
     mounted() {
+        this.doctor = this.patient.doctors.filter((d) =>
+            this.current_doctor_id && d.id == this.current_doctor_id ||
+            !this.current_doctor_id && d.id == this.patient.doctor_id)[0]
+
         this.date = this.mobile ?
             moment().startOf('day').unix() * 1000 :
             moment().startOf('week').add(1, 'day').unix() * 1000

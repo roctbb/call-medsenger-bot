@@ -15,9 +15,12 @@
                           :key="slot.id"
                           :title="slot.time" :image="images.start_video_call">
                         <div v-if="source == 'doctor'">
-                            <strong>Пациент:</strong> {{ slot.patient_name }} <br><br>
-                            <button class="btn btn-success" @click="start_call(slot)">Начать звонок</button>
-                            <button class="btn btn-danger" @click="cancel_call(slot)">Отменить</button>
+                            <strong>Пациент:</strong> {{ slot.patient_name }} <br>
+                            <strong>Врач:</strong> {{ slot.doctor_name }} <br><br>
+                            <div v-if="current_doctor_id == slot.doctor_id">
+                                <button class="btn btn-success" @click="start_call(slot)">Начать звонок</button>
+                                <button class="btn btn-danger" @click="cancel_call(slot)">Отменить</button>
+                            </div>
                         </div>
                         <div v-else>
                             <strong>Врач:</strong> {{ slot.doctor_name }} <br><br>
@@ -51,7 +54,12 @@ export default {
     methods: {
         load: function () {
             this.loaded = false
-            this.axios.get(this.url(`/api/settings/get_${this.source}_timetable`)).then((response) => {
+            let action = `/api/settings/get_${this.source}_timetable`
+            if (this.source == 'doctor' && this.window_mode != 'settings') {
+                action += '/' + this.current_doctor_id
+            }
+
+            this.axios.get(this.url(action)).then((response) => {
                 this.slots = response.data
                     .filter(slot => slot.status == 'scheduled' && slot.timestamp >= moment().unix())
                     .sort((a, b) => a.timestamp - b.timestamp)

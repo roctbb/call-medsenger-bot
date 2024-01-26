@@ -5,6 +5,14 @@
             <error-block :errors="errors"/>
             <success-message :message="msg"/>
 
+<!--            <div class="col" v-if="window_mode == 'settings'">-->
+<!--                Врач-->
+<!--                <select class="form-control form-control-sm" @change="change_doctor()"-->
+<!--                        v-model="doctor">-->
+<!--                    <option :value="d" v-for="d in patient.doctors">{{ d.name }} ({{ d.role }})</option>-->
+<!--                </select>-->
+<!--            </div>-->
+
             <div class="text-center" v-if="!calls.length">
                 <img :src="images.nothing_found"/>
                 <h5>Нет звонков</h5>
@@ -15,8 +23,8 @@
                     <div v-for="(call, i) in calls">
                         <div class="row">
                             <img :src="call.had_connection ? images.call : images.disconnected_call" height="25">
-                            <div class="col">{{call.start_time}}</div>
-                            <div class="col text-right text-muted">{{call.duration_description}}</div>
+                            <div class="col">{{ call.start_time }}</div>
+                            <div class="col text-right text-muted">{{ call.duration_description }}</div>
                         </div>
                         <hr v-if="i != calls.length - 1">
                     </div>
@@ -66,6 +74,10 @@ export default {
             })
             this.$forceUpdate()
             this.loaded = true
+        },
+        change_doctor: function () {
+            this.loaded = false
+            this.load()
         }
     },
     mounted() {

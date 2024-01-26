@@ -5,7 +5,7 @@
                     @click="change_state('timetable')">Расписание
             </button>
             <button :class="'btn btn-sm ' + btn_color('calls')"
-                    @click="change_state('calls')">Ближайшие звонки
+                    @click="change_state('calls')">Запланированные в контракте звонки
             </button>
             <button :class="'btn btn-sm ' + btn_color('history')"
                     @click="change_state('history')">История звонков

@@ -1,4 +1,4 @@
-from helpers import log
+from helpers import log, get_patient_data
 from managers.Manager import Manager
 from models import Contract, Clinic
 
@@ -56,7 +56,7 @@ class ContractManager(Manager):
         if not contract:
             raise Exception("No contract_id = {} found".format(contract_id))
 
-        patient_info = self.medsenger_api.get_patient_info(contract_id)
+        patient_info = get_patient_data(contract_id)
 
         clinic = Clinic.query.filter_by(id=contract.clinic_id).first()
         if clinic:

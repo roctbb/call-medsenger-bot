@@ -1,4 +1,4 @@
-from helpers import log
+from helpers import log, get_patient_data
 from sqlalchemy import and_
 from managers.Manager import Manager
 from models import TimeSlot
@@ -67,12 +67,19 @@ class TimetableManager(Manager):
         start_of_day = datetime.now()
         timeslots = [timeslot.as_dict() for timeslot in timeslots if timeslot.date >= start_of_day]
         for timeslot in timeslots:
-            info = self.medsenger_api.get_patient_info(timeslot['contract_id'])
-            timeslot['doctor_name'] = info['doctor_name']
+            info =get_patient_data(timeslot['contract_id'])
+            doctor = list(filter(lambda d: d['id'] == int(timeslot['doctor_id']), info['doctors']))[0]
+            timeslot['doctor_name'] = doctor['name']
         return timeslots
 
     def get_doctor_timetable(self, doctor_id):
         timeslots = TimeSlot.query.filter(TimeSlot.doctor_id == doctor_id,
+                                          TimeSlot.date >= datetime.now()).all()
+        timeslots = self.process_timeslots(timeslots)
+        return timeslots
+
+    def get_contract_timetable(self, contract_id):
+        timeslots = TimeSlot.query.filter(TimeSlot.contract_id == contract_id,
                                           TimeSlot.date >= datetime.now()).all()
         timeslots = self.process_timeslots(timeslots)
         return timeslots
@@ -91,7 +98,7 @@ class TimetableManager(Manager):
 
         for timeslot in timeslots:
             if timeslot['contract_id']:
-                info = self.medsenger_api.get_patient_info(timeslot['contract_id'])
+                info = get_patient_data(timeslot['contract_id'])
                 name_parts = list(filter(lambda x:bool(x), info['name'].split(' ')))
                 if name_parts:
                     timeslot['patient_name'] = name_parts[0]
@@ -102,6 +109,9 @@ class TimetableManager(Manager):
                 else:
                     timeslot['patient_name'] = ''
                 timeslot['patient_sex'] = info['sex']
+                doctor = list(filter(lambda d: d['id'] == int(timeslot['doctor_id']), info['doctors']))[0]
+                timeslot['doctor_name'] = doctor['name']
+
         return timeslots
 
     def get(self, timeslot_id):

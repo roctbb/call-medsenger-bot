@@ -9,7 +9,7 @@ class Contract(db.Model):
     clinic_id = db.Column(db.Integer, nullable=True)
     is_active = db.Column(db.Boolean, default=True)
     agent_token = db.Column(db.String(255), nullable=True)
-    engine = db.Column(db.String(255), nullable=True, server_default='zoom')
+    engine = db.Column(db.String(255), nullable=True, server_default='vc')
     show_timetable = db.Column(db.Boolean, default=False)
 
     def as_dict(self, native=False):

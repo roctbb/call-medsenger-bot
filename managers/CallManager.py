@@ -2,7 +2,7 @@ from threading import Thread
 
 import vc_api
 import zoom_api
-from helpers import log, get_sign
+from helpers import log, get_sign, get_patient_data
 from managers.Manager import Manager
 from managers.ContractsManager import ContractManager
 from models import Contract, TimeSlot, Call, Room
@@ -135,7 +135,10 @@ class CallManager(Manager):
             doctor_text = ''
             if timeslot_id:
                 timeslot = TimeSlot.query.filter_by(id=timeslot_id).first()
-                patient_info = self.medsenger_api.get_patient_info(contract_id)
+
+                patient_info = get_patient_data(contract_id)
+                doctor = list(filter(lambda d: d['id'] == int(timeslot.doctor_id), patient_info['doctors']))[0]
+
                 call_time = datetime.utcfromtimestamp(timeslot.date.timestamp())
 
                 patient_offset = patient_info.get('timezone_offset')
@@ -144,8 +147,12 @@ class CallManager(Manager):
                 patient_datetime = call_time - timedelta(minutes=patient_offset if patient_offset is not None else -180)
                 doctor_datetime = call_time - timedelta(minutes=doctor_offset if doctor_offset is not None else -180)
 
-                doctor_text = ', запланированный на {}'.format(doctor_datetime.strftime('%d.%m в %H:%M'))
-                patient_text = ', запланированный на {}'.format(patient_datetime.strftime('%d.%m в %H:%M'))
+                doctor_text = ', запланированный на {}{}'.format(
+                    doctor_datetime.strftime('%d.%m в %H:%M'),
+                    ', врач {}'.format(doctor['name']) if len(patient_info['doctors']) > 1 else '')
+                patient_text = ', запланированный на {}{}'.format(
+                    patient_datetime.strftime('%d.%m в %H:%M'),
+                    ', врач {}'.format(doctor['name']) if len(patient_info['doctors']) > 1 else '')
 
             self.medsenger_api.send_message(contract_id,
                                             'Видеозвонок c пациентом{} (ссылка действительна в течение 60 минут).'
