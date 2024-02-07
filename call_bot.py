@@ -98,7 +98,19 @@ def get_settings(args, form):
         contract_manager.add(contract_id)
 
     contract = contract_manager.get(contract_id)
-    return get_ui(contract, 'settings', params={"show_tt": contract.show_timetable})
+    return get_ui(contract, 'settings', params={"show_tt": contract.show_timetable, "doctor_id": request.args.get('doctor_id')})
+
+
+@app.route('/doctor_settings', methods=['GET'])
+@verify_args
+def get_doctor_settings(args, form):
+    contract_id = request.args.get('contract_id', '')
+
+    if contract_manager.not_exists(contract_id):
+        contract_manager.add(contract_id)
+
+    contract = contract_manager.get(contract_id)
+    return get_ui(contract, 'doctor_settings', params={"show_tt": contract.show_timetable, "doctor_id": request.args.get('doctor_id')})
 
 
 @app.route('/patient_timetable', methods=['GET'])
@@ -171,6 +183,13 @@ def get_appointment(args, form):
     return get_ui(contract, 'appointment')
 
 
+@app.route('/appointment/<doctor_id>', methods=['GET'])
+@verify_args
+def get_doctor_appointment(args, form, doctor_id):
+    contract = contract_manager.get(args.get('contract_id'))
+    return get_ui(contract, 'appointment', params={"doctor_id": doctor_id})
+
+
 @app.route('/<call_id>/<call_pass>', methods=['GET'])
 def call(call_id, call_pass):
     sign = get_sign(call_id)
@@ -193,20 +212,37 @@ def get_patient(args, form, contract_id):
 @verify_args
 def get_doctor_tt(args, form):
     contract_id = args.get('contract_id')
-    patient = medsenger_api.get_patient_info(contract_id)
 
-    timetable = timetable_manager.get_doctor_timetable(patient['doctor_id'])
+    timetable = timetable_manager.get_contract_timetable(contract_id)
 
     return jsonify(timetable)
 
 
-@app.route('/api/settings/get_doctor_timetable/<int:start>/<int:days>', methods=['GET'])
+@app.route('/api/settings/get_doctor_timetable/<int:doctor_id>', methods=['GET'])
 @verify_args
-def get_doctor_week_tt(args, form, start, days):
+def get_doctor_tt_by_id(args, form, doctor_id):
     contract_id = args.get('contract_id')
-    patient = medsenger_api.get_patient_info(contract_id)
 
-    timetable = timetable_manager.get_doctor_period_timetable(patient['doctor_id'], start, days)
+    timetable = timetable_manager.get_doctor_timetable(doctor_id)
+
+    return jsonify(timetable)
+
+
+@app.route('/api/settings/get_call_history', methods=['GET'])
+@verify_args
+def get_call_history(args, form):
+    contract_id = args.get('contract_id')
+    history = call_manager.get_call_history(contract_id)
+
+    return jsonify(history)
+
+
+@app.route('/api/settings/get_doctor_timetable/<int:doctor_id>/<int:start>/<int:days>', methods=['GET'])
+@verify_args
+def get_doctor_week_tt(args, form, doctor_id, start, days):
+    contract_id = args.get('contract_id')
+
+    timetable = timetable_manager.get_doctor_period_timetable(doctor_id, start, days)
 
     return jsonify(timetable)
 
@@ -269,6 +305,24 @@ def send_appointment(args, form):
     return 'ok'
 
 
+@app.route('/send_appointment/<doctor_id>', methods=['POST'])
+@verify_args
+def send_doctor_appointment(args, form, doctor_id):
+    contract_id = args.get('contract_id')
+
+    patient = get_patient_data(contract_id)
+    doctor = list(filter(lambda d: d['id'] == int(doctor_id), patient['doctors']))[0]
+
+    medsenger_api.send_message(contract_id,
+                               'Вам необходимо запланировать онлайн-встречу с врачом ({}). '.format(doctor['name']) +
+                               'Для этого воспользуйтесь кнопкой:',
+                               action_name='Выбрать время', action_link='appointment/' + doctor_id, action_big=False,
+                               only_patient=True, action_onetime=True)
+    medsenger_api.send_message(contract_id, 'Пациенту отправлена ссылка на выбор времени консультации (врач {}).'.format(doctor['name']),
+                               only_doctor=True)
+    return 'ok'
+
+
 @app.route('/save_appointment', methods=['POST'])
 @verify_args
 def save_appointment(args, form):
@@ -276,10 +330,11 @@ def save_appointment(args, form):
     slot = request.json
     timeslot, is_new = timetable_manager.add(slot)
 
-    patient_info = medsenger_api.get_patient_info(contract_id)
+    patient_info = get_patient_data(contract_id)
+    doctor = list(filter(lambda d: d['id'] == int(slot['doctor_id']), patient_info['doctors']))[0]
+
     patient_offset = patient_info.get('timezone_offset')
     doctor_offset = patient_info.get('doctor_timezone_offset')
-
 
     patient_datetime = datetime.utcfromtimestamp(slot['timestamp']) - timedelta(
         minutes=patient_offset if patient_offset else -180)
@@ -287,13 +342,15 @@ def save_appointment(args, form):
         minutes=doctor_offset if doctor_offset else -180)
 
     medsenger_api.send_message(contract_id,
-                               'Онлайн-встреча с врачом запланирована на {} по Вашему часовому поясу. '.format(
+                               'Онлайн-встреча с врачом {}запланирована на {} по Вашему часовому поясу. '.format(
+                                   '({}) '.format(doctor['name']) if len(patient_info['doctors']) > 1 else '',
                                    patient_datetime.strftime('%d.%m в %H:%M')) +
                                'За 10 минут до назначенного времени Вам придет сообщение с информацией для подключения.',
                                only_patient=True)
     medsenger_api.send_message(contract_id,
-                               'Онлайн-встреча с пациентом запланирована на {} по Вашему часовому поясу. '.format(
-                                   doctor_datetime.strftime('%d.%m в %H:%M')) +
+                               'Онлайн-встреча с пациентом запланирована на {} по Вашему часовому поясу{}. '.format(
+                                   doctor_datetime.strftime('%d.%m в %H:%M'),
+                                   ' (врач {})'.format(doctor['name']) if len(patient_info['doctors']) > 1 else '') +
                                'За 10 минут до назначенного времени Вам придет сообщение с информацией для подключения.',
                                only_doctor=True)
 
@@ -334,11 +391,18 @@ def cancel_call(args, form):
 
     timetable_manager.cancel(timeslot['id'])
 
+    patient_info = get_patient_data(contract_id)
+    doctor = list(filter(lambda d: d['id'] == int(timeslot['doctor_id']), patient_info['doctors']))[0]
+
     medsenger_api.send_message(contract_id,
-                               'Онлайн-встреча с врачом ({}) отменена.'.format(timeslot['time']),
+                               'Онлайн-встреча с врачом ({}{}) отменена.'.format(
+                                   'врач {}, '.format(doctor['name']) if len(patient_info['doctors']) > 1 else '',
+                                   timeslot['time']),
                                only_patient=True)
     medsenger_api.send_message(contract_id,
-                               'Онлайн-встреча с пациентом ({}) отменена.'.format(timeslot['time']),
+                               'Онлайн-встреча с пациентом ({}{}) отменена.'.format(
+                                   'врач {}, '.format(doctor['name']) if len(patient_info['doctors']) > 1 else '',
+                                   timeslot['time']),
                                only_doctor=True)
 
     return 'ok'

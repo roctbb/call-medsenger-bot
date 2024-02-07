@@ -102,6 +102,12 @@ def localize(d, zone=None):
 
 def get_patient_data(contract_id):
     patient = medsenger_api.get_patient_info(contract_id)
+    patient['doctors'] = patient.get('doctor_helpers', []) + [{
+        'id': patient['doctor_id'],
+        'name': patient['doctor_name'],
+        'role': 'Лечащий врач'
+    }]
+
     return patient
 
 
